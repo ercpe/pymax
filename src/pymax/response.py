@@ -29,11 +29,11 @@ class DiscoveryIdentifyResponse(BaseResponse):
 	length = 26
 
 	def _parse(self):
-		self.name = str(self.response[0:8])
-		self.serial = str(self.response[8:18])
-		self.request_id = unichr(self.response[18])
-		self.request_type = unichr(self.response[19])
-		self.rf_address = ''.join("%02x" % x for x in self.response[20:23])
+		self.name = self.response[0:8].decode('utf-8')
+		self.serial = self.response[8:18].decode('utf-8')
+		self.request_id = chr(self.response[18])
+		self.request_type = chr(self.response[19])
+		self.rf_address = ''.join("%02x" % x for x in self.response[21:24])
 		self.fw_version = ''.join("%02x" % x for x in self.response[24:26])
 
 	def __str__(self):
@@ -43,10 +43,10 @@ class DiscoveryNetworkConfigurationResponse(BaseResponse):
 	length = 40
 
 	def _parse(self):
-		self.name = str(self.response[0:8])
-		self.serial = str(self.response[8:18])
-		self.request_id = unichr(self.response[18])
-		self.request_type = unichr(self.response[19])
+		self.name = self.response[0:8].decode('utf-8')
+		self.serial = self.response[8:18].decode('utf-8')
+		self.request_id = chr(self.response[18])
+		self.request_type = chr(self.response[19])
 		self.ip_address = '.'.join([str(x) for x in self.response[20:24]])
 		self.gateway = '.'.join([str(x) for x in self.response[24:28]])
 		self.netmask = '.'.join([str(x) for x in self.response[28:32]])
