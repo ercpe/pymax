@@ -8,4 +8,4 @@ install: pip install -r requirements.txt
 script: make test coverage
 
 after_success:
-  - coveralls
+  - coveralls debug
