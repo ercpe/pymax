@@ -3,9 +3,11 @@ python:
   - "2.7"
   - "3.4"
 
-install: pip install -r requirements.txt
+install:
+- pip install -r requirements.txt
+- pip install coveralls
 
 script: make test coverage
 
 after_success:
-  - coveralls debug
+  - coveralls
