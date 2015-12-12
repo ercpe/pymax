@@ -1,5 +1,8 @@
 # pymax
 
+[![Build Status](https://travis-ci.org/ercpe/pymax.svg?branch=master)](https://travis-ci.org/ercpe/pymax)
+
+
 ## Protocol
 
 Resources:
