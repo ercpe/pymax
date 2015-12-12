@@ -8,6 +8,9 @@ class BaseResponse(Debugger):
 	max_length = None
 
 	def __init__(self, response):
+		if not response:
+			raise ValueError("No data given")
+
 		if self.length is not None and len(response) != self.length:
 			raise ValueError("Byte array must be %s bytes in length (is %s)" % (self.length, len(response)))
 
@@ -22,7 +25,7 @@ class BaseResponse(Debugger):
 		self._parse()
 
 	def _parse(self):
-		raise NotImplemented
+		raise NotImplementedError
 
 
 class DiscoveryIdentifyResponse(BaseResponse):
