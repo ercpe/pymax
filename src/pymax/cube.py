@@ -3,7 +3,7 @@ import socket
 
 import logging
 
-from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse
+from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse
 from pymax.util import Debugger
 
 logger = logging.getLogger(__name__)
@@ -40,5 +40,81 @@ class Discovery(Debugger):
 		send_socket.close()
 		recv_socket.close()
 
+
+class Connection(Debugger):
+	MESSAGE_Q = 'q'  # quit
+
+	def __init__(self, conn):
+		self.addr_port = conn
+		self.socket = None
+
+	def connect(self):
+		if self.socket:
+			logger.error(".connect() called when socket already present")
+		else:
+			logger.info("Connecting to cube %s:%s" % self.addr_port)
+			self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.socket.settimeout(1)
+			self.socket.connect(self.addr_port)
+			self.read()
+
+	def read(self):
+		if not self.socket:
+			logger.error(".read() called when not connected")
+			return
+
+		buffer_size = 4096
+		buffer = bytearray([])
+		more = True
+
+		while more:
+			try:
+				logger.debug("socket.recv(%s)" % buffer_size)
+				tmp = self.socket.recv(buffer_size)
+				logger.debug("Read %s bytes" % len(tmp))
+				more = len(tmp) > 0
+				buffer += tmp
+			except socket.timeout:
+				break
+
+		for message in buffer.splitlines():
+			self.parse_message(message)
+
+	def parse_message(self, buffer):
+		message_type = buffer[0:1]
+
+		response = None
+		if message_type == b'H':
+			response = HelloResponse(buffer)
+		else:
+			logger.warning("Cannot process message type %s" % message_type)
+
+		logger.info("Received message %s: %s" % (type(response).__name__, response))
+
+	def send_message(self, msg, payload=None):
+		logger.info("Sending '%s' message with %s bytes of payload" % (msg, len(payload or [])))
+		if not self.socket:
+			self.connect()
+		data = (msg + ':').encode('utf-8')
+		if payload:
+			data += bytearray(payload)
+		data += bytearray(b"\r\n")
+		self.socket.send(data)
+
+	def disconnect(self):
+		if self.socket:
+			self.send_message(Connection.MESSAGE_Q)
+			self.socket.close()
+		self.socket = None
+
+
 class Cube(object):
-	pass
+
+	def __init__(self, address, port=62910):
+		self.connection = Connection((address, port))
+
+	def __enter__(self):
+		self.connection.connect()
+
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		self.connection.disconnect()

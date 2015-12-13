@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from pymax.util import Debugger
-
+import datetime
 
 class BaseResponse(Debugger):
 	length = None
@@ -27,6 +27,17 @@ class BaseResponse(Debugger):
 	def _parse(self):
 		raise NotImplementedError
 
+	# def split_bytes(self, array, separator):
+	# 	length = len(array)
+	#
+	# 	start = 0
+	# 	for pos in range(0, length-len(separator)):
+	# 		if array[pos:pos+len(separator)] == separator:
+	# 			yield array[start:pos]
+	# 			start = pos+len(separator)
+	#
+	# 	yield array[start:]
+
 
 class DiscoveryIdentifyResponse(BaseResponse):
 	length = 26
@@ -41,6 +52,7 @@ class DiscoveryIdentifyResponse(BaseResponse):
 
 	def __str__(self):
 		return "%s: RF addr: %s, FW version: %s" % (self.serial, self.rf_address, self.fw_version)
+
 
 class DiscoveryNetworkConfigurationResponse(BaseResponse):
 	length = 40
@@ -58,3 +70,31 @@ class DiscoveryNetworkConfigurationResponse(BaseResponse):
 
 	def __str__(self):
 		return "%s: IP: %s, Netmask: %s, Gateway: %s, DNS1: %s, DNS2: %s" % (self.serial, self.ip_address, self.netmask, self.gateway, self.dns1, self.dns2)
+
+
+class HelloResponse(BaseResponse):
+	length = 68
+
+	def _parse(self):
+		parts = tuple(self.response[2:].split(b','))
+		self.serial = parts[0].decode('utf-8')
+		self.rf_address = parts[1].decode('utf-8')
+		self.fw_version = parts[2].decode('utf-8')
+		# unknown = parts[3]
+		self.http_connection_id = parts[4]
+		self.duty_cycle = parts[5]
+		self.free_mem_slots = parts[6]
+		date = parts[7]
+		time = parts[8]
+		self.state_cube_time = parts[9]
+		self.ntp_counter = parts[10]
+
+		# 0f0c0c -> 2015-12-12
+		self.datetime = datetime.datetime(int(date[0:2].decode('utf-8'), 16) + 2000,
+										  int(date[2:4].decode('utf-8'), 16),
+										  int(date[4:6].decode('utf-8'), 16),
+										  int(time[0:2].decode('utf-8'), 16),
+										  int(time[2:4].decode('utf-8'), 16))
+
+	def __str__(self):
+		return "%s: RF addr: %s, FW: %s, Date: %s" % (self.serial, self.rf_address, self.fw_version, self.datetime)
