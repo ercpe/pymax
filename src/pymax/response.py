@@ -160,7 +160,6 @@ class MResponse(MultiResponse):
 		self.num_devices = data[pos]
 		pos += 1
 
-		logging.debug("Devices: %s" % self.num_devices)
 		for device_idx in range(0, self.num_devices):
 			device_type = data[pos]
 			device_rf_address = ''.join("%X" % x for x in data[pos+1 : pos+1 + 3])

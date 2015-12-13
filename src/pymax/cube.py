@@ -86,6 +86,7 @@ class Connection(Debugger):
 				break
 
 		messages = buffer.splitlines()
+		logger.debug("Processing %s messages" % len(messages))
 
 		while len(messages):
 			current = messages[0]
@@ -100,12 +101,13 @@ class Connection(Debugger):
 					multi_responses.append(messages.pop(1)[2:])
 
 				logger.info("'%s' message with %s parts" % (message_type, len(multi_responses)))
-				return self.parse_message(message_type, multi_responses)
+				self.parse_message(message_type, multi_responses)
 			else:
 				logger.info("'%s' single-part message" % message_type)
 				self.parse_message(message_type, current[2:])
 
 			messages.pop(0)
+			logger.debug("Remaining: %s messages" % len(messages))
 
 	def parse_message(self, message_type, buffer):
 		response = None
