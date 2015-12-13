@@ -2,7 +2,9 @@
 import unittest
 import datetime
 
-from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, HelloResponse
+from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, \
+	MResponse
+
 
 class BaseResponseTest(unittest.TestCase):
 
@@ -41,6 +43,17 @@ class BaseResponseTest(unittest.TestCase):
 		self.assertRaises(ValueError, MaxLengthResponse, bytearray()) # empty
 		self.assertRaises(ValueError, MaxLengthResponse, bytearray([0 for _ in range(0, 100)]))  # too long
 
+
+	def test_bytes_to_int(self):
+		class FakeResponse(BaseResponse):
+			def _parse(self):
+				pass
+
+		r = FakeResponse(bytearray([0x00]))
+		self.assertEqual(r.bytes_to_int(None), None)
+		self.assertEqual(r.bytes_to_int(bytearray([])), None)
+		self.assertEqual(r.bytes_to_int(bytearray([0x00])), 0)
+		self.assertEqual(r.bytes_to_int(bytearray([0x0a, 0x01])), 11)
 
 class DiscoveryIdentifyResponseTest(unittest.TestCase):
 
@@ -128,3 +141,31 @@ class HelloResponseTest(unittest.TestCase):
 	def test_str(self):
 		response = self._make_response()
 		self.assertEqual(str(response), "KEQ0523864: RF addr: 10b199, FW: 0113, Date: 2015-12-13 08:18:00")
+
+
+class MResponseTest(unittest.TestCase):
+	def _make_response(self):
+		b = bytearray([
+			0x4D, 0x3A,
+			0x30, 0x30, 0x2C,
+			0x30, 0x31, 0x2C,
+			0x56, 0x67, 0x49, 0x42, 0x41, 0x51, 0x70, 0x58, 0x62, 0x32, 0x68, 0x75,
+			0x65, 0x6D, 0x6C, 0x74, 0x62, 0x57, 0x56, 0x79, 0x45, 0x69, 0x74, 0x6C,
+			0x41, 0x51, 0x49, 0x53, 0x4B, 0x32, 0x56, 0x4E, 0x52, 0x56, 0x45, 0x78,
+			0x4E, 0x44, 0x63, 0x79, 0x4F, 0x54, 0x6B, 0x33, 0x42, 0x30, 0x68, 0x6C,
+			0x61, 0x58, 0x70, 0x31, 0x62, 0x6D, 0x63, 0x42, 0x41, 0x51, 0x3D, 0x3D
+		])
+
+		return MResponse(b)
+
+	def test_parsing(self):
+		response = self._make_response()
+
+		self.assertEqual(response.num_rooms, 1)
+		self.assertEqual(response.rooms, [
+			(1, 'Wohnzimmer', '122B65')
+		])
+		self.assertEqual(response.num_devices, 1)
+		self.assertEqual(response.devices, [
+			(0, 2, '122B65', 'MEQ1472997', 'Heizung', 1)
+		])

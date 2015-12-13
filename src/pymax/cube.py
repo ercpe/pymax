@@ -4,7 +4,7 @@ import socket
 import logging
 
 from pymax.messages import QuitMessage
-from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse
+from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse
 from pymax.util import Debugger
 
 logger = logging.getLogger(__name__)
@@ -87,6 +87,8 @@ class Connection(Debugger):
 		response = None
 		if message_type == b'H':
 			response = HelloResponse(buffer)
+		elif message_type == b'M':
+			response = MResponse(buffer)
 		else:
 			logger.warning("Cannot process message type %s" % message_type)
 

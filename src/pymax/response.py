@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
+import base64
+
+import struct
+
 from pymax.util import Debugger
 import datetime
+import logging
+
+logger = logging.getLogger(__file__)
 
 class BaseResponse(Debugger):
 	length = None
@@ -27,17 +34,11 @@ class BaseResponse(Debugger):
 	def _parse(self):
 		raise NotImplementedError
 
-	# def split_bytes(self, array, separator):
-	# 	length = len(array)
-	#
-	# 	start = 0
-	# 	for pos in range(0, length-len(separator)):
-	# 		if array[pos:pos+len(separator)] == separator:
-	# 			yield array[start:pos]
-	# 			start = pos+len(separator)
-	#
-	# 	yield array[start:]
-
+	def bytes_to_int(self, barray):
+		if barray is None or len(barray) == 0:
+			return None
+		self.dump_bytes(barray, "Bytes to int")
+		return sum(struct.unpack('b' * len(barray), barray))
 
 class DiscoveryIdentifyResponse(BaseResponse):
 	length = 26
@@ -98,3 +99,43 @@ class HelloResponse(BaseResponse):
 
 	def __str__(self):
 		return "%s: RF addr: %s, FW: %s, Date: %s" % (self.serial, self.rf_address, self.fw_version, self.datetime)
+
+
+class MResponse(BaseResponse):
+	min_length = 5
+
+	def _parse(self):
+		idx = int(self.response[2:4].decode('utf-8'))
+		num_parts = int(self.response[5:7].decode('utf-8'))
+		logger.debug("Message %s of %s" % (idx, num_parts))
+		base64_data = self.response[8:].decode('utf-8')
+		data = bytearray(base64.b64decode(base64_data))
+
+		self.dump_bytes(data, "Base64 decoded")
+
+		# first two bytes are currently unknown
+		self.num_rooms = data[3]
+		self.rooms = []
+		pos = 3
+		for _ in range(0, self.num_rooms):
+			room_id, name_length = struct.unpack('bb', data[pos:pos+2])
+			room_name = data[pos + 2:pos + 2 + name_length].decode('utf-8')
+			group_rf_address = ''.join("%X" % x for x in data[pos+name_length + 2 : pos+name_length + 2 + 3])
+			self.rooms.append((room_id, room_name, group_rf_address))
+			# set pos to start of next section
+			pos += 1 + 1 + name_length + 3
+
+		self.dump_bytes(data[pos:], "Devices")
+
+		self.devices = []
+		self.num_devices = data[pos]
+		logging.debug("Devices: %s" % self.num_devices)
+		for device_idx in range(0, self.num_devices):
+			device_type = data[pos+1]
+			device_rf_address = ''.join("%X" % x for x in data[pos+2 : pos+ 2 + 3])
+			device_serial = data[pos+5:pos+15].decode('utf-8')
+			device_name_length = data[pos+15]
+			device_name = data[pos+16:pos+16+device_name_length].decode('utf-8')
+			room_id = data[pos+16+device_name_length]
+			self.devices.append((device_idx, device_type, device_rf_address, device_serial, device_name, room_id))
+			pos += 1 + 3 + 10 + device_name_length + 1
