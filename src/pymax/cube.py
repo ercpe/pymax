@@ -7,7 +7,7 @@ import collections
 
 from pymax.messages import QuitMessage
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
-	HELLO_RESPONSE, M_RESPONSE
+	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses
 from pymax.util import Debugger
 
 logger = logging.getLogger(__name__)
@@ -85,12 +85,25 @@ class Connection(Debugger):
 			except socket.timeout:
 				break
 
-		for message in buffer.splitlines():
-			self.parse_message(message)
+		messages = buffer.splitlines()
 
-	def parse_message(self, buffer):
-		message_type = buffer[0:1].decode('utf-8')
+		while len(messages):
+			current = messages[0]
+			message_type = chr(current[0])
+			if message_type in MultiPartResponses:
+				multi_responses = [current]
+				while len(messages) > 1 and chr(messages[1][0]) == message_type:
+					multi_responses.append(messages.pop(1))
 
+				logger.info("Multi parts: %s" % len(multi_responses))
+				return self.parse_message(message_type, multi_responses)
+			else:
+				logger.info("Single part: %s" % current)
+				self.parse_message(message_type, current)
+
+			messages.pop(0)
+
+	def parse_message(self, message_type, buffer):
 		response = None
 		if message_type == HELLO_RESPONSE:
 			response = HelloResponse(buffer)

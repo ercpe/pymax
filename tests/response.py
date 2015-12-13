@@ -156,7 +156,7 @@ class MResponseTest(unittest.TestCase):
 			0x61, 0x58, 0x70, 0x31, 0x62, 0x6D, 0x63, 0x42, 0x41, 0x51, 0x3D, 0x3D
 		])
 
-		return MResponse(b)
+		return MResponse([b])
 
 	def test_parsing(self):
 		response = self._make_response()
