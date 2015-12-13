@@ -9,6 +9,10 @@ import logging
 
 logger = logging.getLogger(__file__)
 
+HELLO_RESPONSE = 'H'
+M_RESPONSE = 'M'
+
+
 class BaseResponse(Debugger):
 	length = None
 	min_length = None
@@ -139,3 +143,6 @@ class MResponse(BaseResponse):
 			room_id = data[pos+16+device_name_length]
 			self.devices.append((device_idx, device_type, device_rf_address, device_serial, device_name, room_id))
 			pos += 1 + 3 + 10 + device_name_length + 1
+
+	def __str__(self):
+		return "MResponse (%s rooms, %s devices)" % (self.num_rooms, self.num_devices)

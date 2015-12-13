@@ -3,11 +3,17 @@ import socket
 
 import logging
 
+import collections
+
 from pymax.messages import QuitMessage
-from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse
+from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
+	HELLO_RESPONSE, M_RESPONSE
 from pymax.util import Debugger
 
 logger = logging.getLogger(__name__)
+
+Room = collections.namedtuple('Room', ('room_id', 'name', 'rf_address', 'devices'))
+Device = collections.namedtuple('Device', ('type', 'rf_address', 'serial', 'name'))
 
 class Discovery(Debugger):
 	DISCOVERY_TYPE_IDENTIFY = 'I'
@@ -48,6 +54,7 @@ class Connection(Debugger):
 	def __init__(self, conn):
 		self.addr_port = conn
 		self.socket = None
+		self.received_messages = {}
 
 	def connect(self):
 		if self.socket:
@@ -82,17 +89,19 @@ class Connection(Debugger):
 			self.parse_message(message)
 
 	def parse_message(self, buffer):
-		message_type = buffer[0:1]
+		message_type = buffer[0:1].decode('utf-8')
 
 		response = None
-		if message_type == b'H':
+		if message_type == HELLO_RESPONSE:
 			response = HelloResponse(buffer)
-		elif message_type == b'M':
+		elif message_type == M_RESPONSE:
 			response = MResponse(buffer)
 		else:
 			logger.warning("Cannot process message type %s" % message_type)
 
-		logger.info("Received message %s: %s" % (type(response).__name__, response))
+		if response:
+			logger.info("Received message %s: %s" % (type(response).__name__, response))
+			self.received_messages[message_type.encode('utf-8')] = response
 
 	def send_message(self, msg):
 		message_bytes = msg.to_bytes()
@@ -115,6 +124,18 @@ class Cube(object):
 
 	def __enter__(self):
 		self.connection.connect()
+		return self
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
 		self.connection.disconnect()
+
+	@property
+	def rooms(self):
+		if M_RESPONSE in self.connection.received_messages:
+			mr = self.connection.received_messages[M_RESPONSE]
+			return [
+				Room(*room_data, devices=[
+					Device(device_data[1], device_data[2], device_data[3], device_data[4]) for device_data in filter(lambda x: x[5] == room_data[0], mr.devices)
+				]) for room_data in mr.rooms
+			]
+		return []
