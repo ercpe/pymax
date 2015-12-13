@@ -5,16 +5,21 @@ QUIT_MESSAGE = 'q'
 
 class BaseMessage(object):
 
-	def __init__(self, msg, payload=None):
+	def __init__(self, msg):
 		self.msg = msg
-		self.payload = payload
 
 	def to_bytes(self):
 		data = (self.msg + ':').encode('utf-8')
-		if self.payload:
-			data += bytearray(self.payload)
+
+		payload = self.get_payload()
+		if payload:
+			data += bytearray(payload)
+
 		data += bytearray(b"\r\n")
 		return data
+
+	def get_payload(self):
+		return None
 
 
 class QuitMessage(BaseMessage):
