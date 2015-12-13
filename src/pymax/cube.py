@@ -90,15 +90,18 @@ class Connection(Debugger):
 		while len(messages):
 			current = messages[0]
 			message_type = chr(current[0])
-			if message_type in MultiPartResponses:
-				multi_responses = [current]
-				while len(messages) > 1 and chr(messages[1][0]) == message_type:
-					multi_responses.append(messages.pop(1))
 
-				logger.info("Multi parts: %s" % len(multi_responses))
+			if message_type in MultiPartResponses:
+				multi_responses = [
+					current[2:]
+				]
+				while len(messages) > 1 and chr(messages[1][0]) == message_type:
+					multi_responses.append(messages.pop(1)[2:])
+
+				logger.info("'%s' message with %s parts" % (message_type, len(multi_responses)))
 				return self.parse_message(message_type, multi_responses)
 			else:
-				logger.info("Single part: %s" % current)
+				logger.info("'%s' single-part message" % message_type)
 				self.parse_message(message_type, current)
 
 			messages.pop(0)

@@ -92,10 +92,10 @@ class DiscoveryNetworkConfigurationResponse(BaseResponse):
 
 
 class HelloResponse(BaseResponse):
-	length = 68
+	length = 66
 
 	def _parse(self):
-		parts = tuple(self.data[2:].split(b','))
+		parts = tuple(self.data.split(b','))
 		self.serial = parts[0].decode('utf-8')
 		self.rf_address = parts[1].decode('utf-8')
 		self.fw_version = parts[2].decode('utf-8')
@@ -126,8 +126,8 @@ class MResponse(BaseResponse):
 		chunks = []
 
 		for part in self.raw_response:
-			idx = int(part[2:4].decode('utf-8'))
-			chunks.append((idx, part[8:]))
+			idx = int(part[0:2].decode('utf-8'))
+			chunks.append((idx, part[6:]))
 
 		full_data = bytearray([])
 		for _, data in sorted(chunks):
