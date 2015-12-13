@@ -95,6 +95,7 @@ class Connection(Debugger):
 				multi_responses = [
 					current[2:]
 				]
+
 				while len(messages) > 1 and chr(messages[1][0]) == message_type:
 					multi_responses.append(messages.pop(1)[2:])
 
@@ -102,7 +103,7 @@ class Connection(Debugger):
 				return self.parse_message(message_type, multi_responses)
 			else:
 				logger.info("'%s' single-part message" % message_type)
-				self.parse_message(message_type, current)
+				self.parse_message(message_type, current[2:])
 
 			messages.pop(0)
 
@@ -117,7 +118,7 @@ class Connection(Debugger):
 
 		if response:
 			logger.info("Received message %s: %s" % (type(response).__name__, response))
-			self.received_messages[message_type.encode('utf-8')] = response
+			self.received_messages[message_type] = response
 
 	def send_message(self, msg):
 		message_bytes = msg.to_bytes()

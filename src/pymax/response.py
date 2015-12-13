@@ -32,7 +32,6 @@ class BaseResponse(Debugger):
 		if self.max_length is not None and len(response) > self.max_length:
 			raise ValueError("Byte array must be at most %s bytes in length (is %s)" % (self.length, len(response)))
 
-		#self.data = response
 		self.raw_response = response
 		self.dump_bytes(response)
 		self._parse()
@@ -52,6 +51,9 @@ class BaseResponse(Debugger):
 
 
 class MultiResponse(BaseResponse):
+
+	def __init__(self, response):
+		super(MultiResponse, self).__init__([response] if isinstance(response, bytearray) else response)
 
 	@property
 	def data(self):
@@ -119,7 +121,7 @@ class HelloResponse(BaseResponse):
 		return "%s: RF addr: %s, FW: %s, Date: %s" % (self.serial, self.rf_address, self.fw_version, self.datetime)
 
 
-class MResponse(BaseResponse):
+class MResponse(MultiResponse):
 
 	@property
 	def data(self):
