@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-class CubeTest(unittest.TestCase):
+from pymax.cube import Connection
+
+class ConnectionTest(unittest.TestCase):
 	pass
