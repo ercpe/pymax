@@ -3,6 +3,7 @@ import socket
 
 import logging
 
+from pymax.messages import QuitMessage
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse
 from pymax.util import Debugger
 
@@ -91,19 +92,16 @@ class Connection(Debugger):
 
 		logger.info("Received message %s: %s" % (type(response).__name__, response))
 
-	def send_message(self, msg, payload=None):
-		logger.info("Sending '%s' message with %s bytes of payload" % (msg, len(payload or [])))
+	def send_message(self, msg):
+		message_bytes = msg.to_bytes()
+		logger.info("Sending '%s' message (%s bytes)" % (msg.__class__.__name__, len(message_bytes)))
 		if not self.socket:
 			self.connect()
-		data = (msg + ':').encode('utf-8')
-		if payload:
-			data += bytearray(payload)
-		data += bytearray(b"\r\n")
-		self.socket.send(data)
+		self.socket.send(message_bytes)
 
 	def disconnect(self):
 		if self.socket:
-			self.send_message(Connection.MESSAGE_Q)
+			self.send_message(QuitMessage())
 			self.socket.close()
 		self.socket = None
 

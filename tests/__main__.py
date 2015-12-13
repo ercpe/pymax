@@ -6,6 +6,7 @@ except ImportError:
     import unittest
 
 from response import *
+from messages import *
 from cube import *
 
 if __name__ == '__main__':
