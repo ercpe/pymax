@@ -15,4 +15,4 @@ class Debugger(object):
 				logger.log(level, "%s  %s" % (str(row_num).ljust(2), ' '.join(["%02x" % x for x in row_bytes])))
 				logger.log(level, "     %s" % '  '.join([chr(x) if 32 < x < 128 else ' ' for x in row_bytes]))
 
-			#logger.log(level, ', '.join(["0x%X" % x for x in barray]))
+			logger.log(level, ', '.join(["0x%02X" % x for x in barray]))

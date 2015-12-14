@@ -3,7 +3,7 @@ import unittest
 import datetime
 
 from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, \
-	MResponse
+	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus
 
 HelloResponseBytes = bytearray([
 	0x4B, 0x45, 0x51, 0x30, 0x35, 0x32, 0x33, 0x38, 0x36, 0x34, 0x2C,
@@ -191,3 +191,35 @@ class MResponseTest(unittest.TestCase):
 		self.assertEqual(response.devices, [
 			(0, 2, '122B65', 'MEQ1472997', 'Heizung', 1)
 		])
+
+class ConfigurationResponseTest(unittest.TestCase):
+
+	def test_cube_config(self):
+		b = bytearray(b'10b199,7RCxmQATAf9MRVExMTU0NzI3AAsABEAAAAAAAAAAAP///////////////////////////wsABEAAAAAAAAAAQf///////////////////////////2h0dHA6Ly9tYXguZXEtMy5kZTo4MC9jdWJlADAvbG9va3VwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAENFVAAACgADAAAOEENFU1QAAwACAAAcIA==')
+		response = ConfigurationResponse(b)
+
+		self.assertEqual(response.device_type, DeviceCube)
+		self.assertEqual(response.device_addr, '10B199')
+		self.assertEqual(response.serial_number, 'LEQ115472')
+		self.assertEqual(response.portal_enabled, False)
+		self.assertEqual(response.portal_url, 'http://max.eq-3.de:80/cube')
+
+	def test_thermostat_config(self):
+		b = bytearray(b'122b65,0hIrZQIBEABNRVExNDcyOTk3Oyc9CQcYA5IM/wBESHkPRSBFIEUgRSBFIEUgRSBFIEUgRSBFIERIeQlFIEUgRSBFIEUgRSBFIEUgRSBFIEUgREJ4XkTJeRJFIEUgRSBFIEUgRSBFIEUgRSBEQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIERCeF5EyXkSRSBFIEUgRSBFIEUgRSBFIEUgREJ4XkTJeRJFIEUgRSBFIEUgRSBFIEUgRSBEQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIA==')
+		response = ConfigurationResponse(b)
+
+		self.assertEqual(response.device_type, DeviceRadiatorThermostatPlus)
+		self.assertEqual(response.device_addr, '122B65')
+		self.assertEqual(response.serial_number, 'MEQ147299')
+		self.assertEqual(response.comfort_temperature, 29.5)
+		self.assertEqual(response.eco_temperature, 19.5)
+		self.assertEqual(response.max_set_point_temperature, 30.5)
+		self.assertEqual(response.min_set_point_temperature, 4.5)
+		self.assertEqual(response.temperature_offset, 7.0)
+		self.assertEqual(response.window_open_temperature, 12.0)
+		self.assertEqual(response.window_open_duration, 15.0)
+		self.assertEqual(response.boost_duration, 20.0)
+		self.assertEqual(response.boost_valve_setting, 90.0)
+		self.assertEqual(response.decalcification_day, 0)
+		self.assertEqual(response.decalcification_hour, 12)
+		self.assertEqual(response.max_valve_setting, 100)
