@@ -12,5 +12,5 @@ test: test_py2 test_py3
 
 coverage:
 	coverage erase
-	PYTHONPATH=".:./src" coverage run --source='src' --omit='src/test.py' --branch tests/__main__.py
+	PYTHONPATH=".:./src" coverage run --source='src' --omit='src/test.py' --omit='src/fakecube.py' --branch tests/__main__.py
 	coverage report -m
