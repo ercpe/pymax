@@ -3,7 +3,7 @@ import unittest
 import datetime
 
 from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, \
-	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus
+	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus, LResponse
 
 HelloResponseBytes = bytearray([
 	0x4B, 0x45, 0x51, 0x30, 0x35, 0x32, 0x33, 0x38, 0x36, 0x34, 0x2C,
@@ -192,6 +192,7 @@ class MResponseTest(unittest.TestCase):
 			(0, 2, '122B65', 'MEQ1472997', 'Heizung', 1)
 		])
 
+
 class ConfigurationResponseTest(unittest.TestCase):
 
 	def test_cube_config(self):
@@ -223,3 +224,26 @@ class ConfigurationResponseTest(unittest.TestCase):
 		self.assertEqual(response.decalcification_day, 0)
 		self.assertEqual(response.decalcification_hour, 12)
 		self.assertEqual(response.max_valve_setting, 100)
+
+
+class LResponseTest(unittest.TestCase):
+	def test_parsing(self):
+		response = LResponse("CxIrZfcSGWQ8AOsA")
+
+		self.assertEqual(response.rf_addr, '122b65')
+		self.assertFalse(response.weekly_program)
+		self.assertTrue(response.manual_program)
+		self.assertFalse(response.vacation_program)
+		self.assertFalse(response.boost_program)
+		self.assertEqual(response.valve_position, 100)
+
+		self.assertTrue(response.dst_active)
+		self.assertTrue(response.gateway_known)
+		self.assertFalse(response.panel_locked)
+		self.assertTrue(response.link_ok)
+		self.assertFalse(response.battery_low)
+
+		self.assertTrue(response.status_initialized)
+		self.assertFalse(response.is_answer)
+		self.assertFalse(response.is_error)
+		self.assertFalse(response.is_valid)

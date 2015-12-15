@@ -7,7 +7,7 @@ import collections
 
 from pymax.messages import QuitMessage
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
-	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse
+	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse
 from pymax.util import Debugger
 
 logger = logging.getLogger(__name__)
@@ -117,6 +117,8 @@ class Connection(Debugger):
 			response = MResponse(buffer)
 		elif message_type == CONFIGURATION_RESPONSE:
 			response = ConfigurationResponse(buffer)
+		elif message_type == L_RESPONSE:
+			response = LResponse(buffer)
 		else:
 			logger.warning("Cannot process message type %s" % message_type)
 

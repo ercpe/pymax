@@ -12,6 +12,7 @@ logger = logging.getLogger(__file__)
 HELLO_RESPONSE = 'H'
 M_RESPONSE = 'M'
 CONFIGURATION_RESPONSE = 'C'
+L_RESPONSE = 'L'
 
 MultiPartResponses = M_RESPONSE,
 
@@ -198,7 +199,7 @@ class ConfigurationResponse(BaseResponse):
 
 		b64 = self.data[7:]
 		data = bytearray(base64.b64decode(b64))
-		self.dump_bytes(data, "device config")
+		#self.dump_bytes(data, "device config")
 
 		data_length = data[0]
 		logger.debug("Data length for device config: %s" % data_length)
@@ -308,3 +309,40 @@ class ConfigurationResponse(BaseResponse):
 			s += ", portal enabled: %s, portal url: %s" % (self.portal_enabled, self.portal_url)
 
 		return s
+
+
+class LResponse(BaseResponse):
+
+	def _parse(self):
+		data = bytearray(base64.b64decode(self.data))
+		submessage_len, rf1, rf2, rf3, unknown, flags1, flags2 = struct.unpack('B3BBBB', bytearray(data[:7]))
+		self.rf_addr = "{0:02x}{1:02x}{2:02x}".format(rf1, rf2, rf3)
+
+		self.weekly_program = not (flags2 & 0x01 or flags2 & 0x02)
+		self.manual_program = flags2 & 0x01 and not flags2 & 0x02
+		self.vacation_program = bool(flags2 & 0x02 and not flags2 & 0x01)
+		self.boost_program = bool(flags2 & 0x01 and flags2 & 0x02)
+		self.dst_active = flags2 & 0x08
+
+		self.gateway_known = bool(flags2 & 0x05)
+		self.panel_locked = bool(flags2 & 0x06)
+		self.link_ok = bool(flags2 & 0x07)
+		self.battery_low = bool(not (flags2 & 0x08))
+
+		self.status_initialized = bool(flags1 & 0x02)
+		self.is_answer = bool(not (flags1 & 0x03))
+		self.is_error = bool(flags1 & 0x04)
+		self.is_valid = bool(flags1 & 0x05)
+
+		if submessage_len > 6:
+			self._parse_extra_fields(data)
+
+	def _parse_extra_fields(self, data):
+		self.valve_position, self.temperature, du1, du2, time_until = struct.unpack('5B', data[7:12])
+		self.temperature /= 2.0
+
+	def __str__(self):
+		return "%s: RF addr: %s, program: (weekly: %s, manual: %s, vacation: %s, boost_program: %s)" % (
+			self.__class__.__name__,
+			self.rf_addr, self.weekly_program, self.manual_program, self.vacation_program, self.boost_program
+		)
