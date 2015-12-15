@@ -14,6 +14,7 @@ M_RESPONSE = 'M'
 CONFIGURATION_RESPONSE = 'C'
 L_RESPONSE = 'L'
 F_RESPONSE = 'F'
+SET_RESPONSE = 'S'
 
 MultiPartResponses = M_RESPONSE,
 
@@ -355,3 +356,16 @@ class FResponse(BaseResponse):
 
 	def __str__(self):
 		return "NTP Servers: %s" % ', '.join(self.ntp_servers)
+
+
+class SetResponse(BaseResponse):
+
+	def _parse(self):
+		self.duty_cycle, self.command_result, self.free_mem_slots = self.data.decode('utf-8').split(',')
+		self.duty_cycle = int(self.duty_cycle, 16)
+		self.free_mem_slots = int(self.free_mem_slots)
+		self.command_result = int(self.command_result)
+		self.command_success = self.command_result == 0
+
+	def __str__(self):
+		return "SetResponse: Command success: %s" % self.command_success

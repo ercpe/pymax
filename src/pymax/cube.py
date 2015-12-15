@@ -5,10 +5,10 @@ import logging
 
 import collections
 
-from pymax.messages import QuitMessage, FMessage
+from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
 	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse, \
-	F_RESPONSE, FResponse
+	F_RESPONSE, FResponse, SET_RESPONSE, SetResponse
 from pymax.util import Debugger
 
 logger = logging.getLogger(__name__)
@@ -122,6 +122,8 @@ class Connection(Debugger):
 			response = LResponse(buffer)
 		elif message_type == F_RESPONSE:
 			response = FResponse(buffer)
+		elif message_type == SET_RESPONSE:
+			response = SetResponse(buffer)
 		else:
 			logger.warning("Cannot process message type %s" % message_type)
 
@@ -181,3 +183,19 @@ class Cube(object):
 		self.connection.send_message(FMessage(ntp_servers))
 
 	ntp_servers = property(get_ntp_servers, set_ntp_servers)
+
+	def set_mode_auto(self, room, rf_addr):
+		return self.set_mode(room, rf_addr, SetTemperatureAndModeMessage.ModeAuto)
+
+	def set_mode_boost(self, room, rf_addr):
+		return self.set_mode(room, rf_addr, SetTemperatureAndModeMessage.ModeBoost)
+
+	def set_mode_manual(self, room, rf_addr, temperature):
+		return self.set_mode(room, rf_addr, SetTemperatureAndModeMessage.ModeManual, temperature=temperature)
+
+	def set_mode_vacation(self, room, rf_addr, temperature, end):
+		return self.set_mode(room, rf_addr, SetTemperatureAndModeMessage.ModeVacation, temperature=temperature, end=end)
+
+	def set_mode(self, room, rf_addr, mode, *args, **kwargs):
+		self.connection.send_message(SetTemperatureAndModeMessage(rf_addr, room, mode, **kwargs))
+		return self.connection.get_message(SET_RESPONSE)

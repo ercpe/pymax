@@ -8,6 +8,7 @@ except ImportError:
 from response import *
 from messages import *
 from cube import *
+from util import *
 
 if __name__ == '__main__':
     unittest.main()
