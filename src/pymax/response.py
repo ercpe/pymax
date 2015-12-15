@@ -13,6 +13,7 @@ HELLO_RESPONSE = 'H'
 M_RESPONSE = 'M'
 CONFIGURATION_RESPONSE = 'C'
 L_RESPONSE = 'L'
+F_RESPONSE = 'F'
 
 MultiPartResponses = M_RESPONSE,
 
@@ -346,3 +347,11 @@ class LResponse(BaseResponse):
 			self.__class__.__name__,
 			self.rf_addr, self.weekly_program, self.manual_program, self.vacation_program, self.boost_program
 		)
+
+
+class FResponse(BaseResponse):
+	def _parse(self):
+		self.ntp_servers = self.data.decode('utf-8').split(',')
+
+	def __str__(self):
+		return "NTP Servers: %s" % ', '.join(self.ntp_servers)

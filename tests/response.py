@@ -3,7 +3,7 @@ import unittest
 import datetime
 
 from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, \
-	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus, LResponse
+	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus, LResponse, FResponse
 
 HelloResponseBytes = bytearray([
 	0x4B, 0x45, 0x51, 0x30, 0x35, 0x32, 0x33, 0x38, 0x36, 0x34, 0x2C,
@@ -247,3 +247,12 @@ class LResponseTest(unittest.TestCase):
 		self.assertFalse(response.is_answer)
 		self.assertFalse(response.is_error)
 		self.assertFalse(response.is_valid)
+
+
+class FResponseTest(unittest.TestCase):
+	def test_parsing(self):
+		response = FResponse(bytearray("ntp.homematic.com,ntp.homematic.com", encoding='utf-8'))
+		self.assertEqual(response.ntp_servers, [
+			'ntp.homematic.com',
+			'ntp.homematic.com'
+		])

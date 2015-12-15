@@ -5,9 +5,10 @@ import logging
 
 import collections
 
-from pymax.messages import QuitMessage
+from pymax.messages import QuitMessage, FMessage
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
-	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse
+	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse, \
+	F_RESPONSE, FResponse
 from pymax.util import Debugger
 
 logger = logging.getLogger(__name__)
@@ -119,6 +120,8 @@ class Connection(Debugger):
 			response = ConfigurationResponse(buffer)
 		elif message_type == L_RESPONSE:
 			response = LResponse(buffer)
+		elif message_type == F_RESPONSE:
+			response = FResponse(buffer)
 		else:
 			logger.warning("Cannot process message type %s" % message_type)
 
@@ -132,6 +135,10 @@ class Connection(Debugger):
 		if not self.socket:
 			self.connect()
 		self.socket.send(message_bytes)
+		self.read()
+
+	def get_message(self, message_type):
+		return self.received_messages.get(message_type, None)
 
 	def disconnect(self):
 		if self.socket:
@@ -154,11 +161,23 @@ class Cube(object):
 
 	@property
 	def rooms(self):
-		if M_RESPONSE in self.connection.received_messages:
-			mr = self.connection.received_messages[M_RESPONSE]
+		msg = self.connection.get_message(M_RESPONSE)
+		if msg:
 			return [
 				Room(*room_data, devices=[
-					Device(device_data[1], device_data[2], device_data[3], device_data[4]) for device_data in filter(lambda x: x[5] == room_data[0], mr.devices)
-				]) for room_data in mr.rooms
+					Device(device_data[1], device_data[2], device_data[3], device_data[4]) for device_data in filter(lambda x: x[5] == room_data[0], msg.devices)
+				]) for room_data in msg.rooms
 			]
 		return []
+
+	def get_ntp_servers(self):
+		self.connection.send_message(FMessage())
+		fmsg = self.connection.get_message(F_RESPONSE)
+		if fmsg:
+			return fmsg.ntp_servers
+		return None
+
+	def set_ntp_servers(self, ntp_servers):
+		self.connection.send_message(FMessage(ntp_servers))
+
+	ntp_servers = property(get_ntp_servers, set_ntp_servers)
