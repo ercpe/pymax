@@ -29,6 +29,16 @@ MResponseBytes = bytearray([
 	0x61, 0x58, 0x70, 0x31, 0x62, 0x6D, 0x63, 0x42, 0x41, 0x51, 0x3D, 0x3D
 ])
 
+CubeConfigurationBytes = bytearray(b'10b199,7RCxmQATAf9MRVExMTU0NzI3AAsABEAAAAAAAAAAAP///////////////////////////'
+								   b'wsABEAAAAAAAAAAQf///////////////////////////2h0dHA6Ly9tYXguZXEtMy5kZTo4MC9jdW'
+								   b'JlADAvbG9va3VwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+								   b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAENFVAAACgADAAAOEE'
+								   b'NFU1QAAwACAAAcIA==')
+ThermostatConfigurationBytes = bytearray(b'122b65,0hIrZQIBEABNRVExNDcyOTk3Oyc9CQcYA5IM/wBESHkPRSBFIEUgRSBFIEUgRSBFIEUg'
+										 b'RSBFIERIeQlFIEUgRSBFIEUgRSBFIEUgRSBFIEUgREJ4XkTJeRJFIEUgRSBFIEUgRSBFIEUgRSB'
+										 b'EQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIERCeF5EyXkSRSBFIEUgRSBFIEUgRSBFIEUgREJ4Xk'
+										 b'TJeRJFIEUgRSBFIEUgRSBFIEUgRSBEQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIA==')
+
 class BaseResponseTest(unittest.TestCase):
 
 	def test_fix_length(self):
@@ -196,8 +206,7 @@ class MResponseTest(unittest.TestCase):
 class ConfigurationResponseTest(unittest.TestCase):
 
 	def test_cube_config(self):
-		b = bytearray(b'10b199,7RCxmQATAf9MRVExMTU0NzI3AAsABEAAAAAAAAAAAP///////////////////////////wsABEAAAAAAAAAAQf///////////////////////////2h0dHA6Ly9tYXguZXEtMy5kZTo4MC9jdWJlADAvbG9va3VwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAENFVAAACgADAAAOEENFU1QAAwACAAAcIA==')
-		response = ConfigurationResponse(b)
+		response = ConfigurationResponse(CubeConfigurationBytes)
 
 		self.assertEqual(response.device_type, DeviceCube)
 		self.assertEqual(response.device_addr, '10B199')
@@ -206,8 +215,8 @@ class ConfigurationResponseTest(unittest.TestCase):
 		self.assertEqual(response.portal_url, 'http://max.eq-3.de:80/cube')
 
 	def test_thermostat_config(self):
-		b = bytearray(b'122b65,0hIrZQIBEABNRVExNDcyOTk3Oyc9CQcYA5IM/wBESHkPRSBFIEUgRSBFIEUgRSBFIEUgRSBFIERIeQlFIEUgRSBFIEUgRSBFIEUgRSBFIEUgREJ4XkTJeRJFIEUgRSBFIEUgRSBFIEUgRSBEQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIERCeF5EyXkSRSBFIEUgRSBFIEUgRSBFIEUgREJ4XkTJeRJFIEUgRSBFIEUgRSBFIEUgRSBEQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIA==')
-		response = ConfigurationResponse(b)
+
+		response = ConfigurationResponse(ThermostatConfigurationBytes)
 
 		self.assertEqual(response.device_type, DeviceRadiatorThermostatPlus)
 		self.assertEqual(response.device_addr, '122B65')

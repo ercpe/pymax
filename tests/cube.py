@@ -11,8 +11,9 @@ else:
 
 from pymax.messages import SetTemperatureAndModeMessage, FMessage
 from pymax.cube import Connection, Cube, Room, Device
-from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse
-from response import HelloResponseBytes, MResponseBytes
+from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse, CONFIGURATION_RESPONSE, \
+	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE
+from response import HelloResponseBytes, MResponseBytes, CubeConfigurationBytes
 
 class ConnectionTest(unittest.TestCase):
 
@@ -21,8 +22,11 @@ class ConnectionTest(unittest.TestCase):
 		for message_type, message_bytes, message_class in [
 			(HELLO_RESPONSE, HelloResponseBytes, HelloResponse),
 			(M_RESPONSE, MResponseBytes, MResponse),
+			(CONFIGURATION_RESPONSE, CubeConfigurationBytes, ConfigurationResponse),
+			(L_RESPONSE, bytearray(b"CxIrZfcSGWQ8AOsA"), LResponse),
+			(F_RESPONSE, bytearray(b"ntp.homematic.com,ntp.homematic.com"), FResponse),
+			(SET_RESPONSE, bytearray(b"00,0,31"), SetResponse),
 		]:
-
 			conn = Connection((None, None))
 
 			conn.parse_message(message_type, message_bytes)
