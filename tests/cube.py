@@ -95,11 +95,20 @@ class CubeTest(unittest.TestCase):
 		self.assertFalse(c.connection.connect.called)
 		self.assertTrue(c.connection.disconnect.called)
 
-	def test_context_manager_connect_on_enter(self):
+	def test_context_manager_connect_and_disconnect(self):
 		with Cube(connection=Mock()) as cube:
 			self.assertTrue(cube.connection.connect.called)
 
 		self.assertTrue(cube.connection.disconnect.called)
+
+	def test_context_manager_disconnect_on_exception(self):
+		try:
+			with Cube(connection=Mock()) as cube:
+				raise Exception("just a test")
+		except Exception as ex:
+			self.assertTrue(cube.connection.connect.called)
+			self.assertTrue(cube.connection.disconnect.called)
+			self.assertEqual(ex.args, ("just a test", ))
 
 	def _mocked_cube(self):
 		conn = Mock()
