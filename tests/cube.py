@@ -17,6 +17,24 @@ from response import HelloResponseBytes, MResponseBytes
 
 class ConnectionTest(unittest.TestCase):
 
+	def test_parse_message(self):
+
+		for message_type, message_bytes, message_class in [
+			(HELLO_RESPONSE, HelloResponseBytes, HelloResponse),
+			(M_RESPONSE, MResponseBytes, MResponse),
+		]:
+
+			conn = Connection((None, None))
+
+			conn.parse_message(message_type, message_bytes)
+
+			self.assertEqual(len(conn.received_messages), 1)
+			self.assertTrue(message_type in conn.received_messages.keys(), "Message of type %s not found in .received_messages" % message_type)
+			self.assertIsInstance(conn.received_messages[message_type], message_class)
+
+
+class CubeTest(unittest.TestCase):
+
 	def test_constructor(self):
 		c = Cube('1.2.3.4')
 		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 62910))
@@ -32,21 +50,6 @@ class ConnectionTest(unittest.TestCase):
 
 		c = Cube(connection=Connection(('1.2.3.4', 123)))
 		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 123))
-
-	def test_parse_message(self):
-
-		for message_type, message_bytes, message_class in [
-			(HELLO_RESPONSE, HelloResponseBytes, HelloResponse),
-			(M_RESPONSE, MResponseBytes, MResponse),
-		]:
-
-			conn = Connection((None, None))
-
-			conn.parse_message(message_type, message_bytes)
-
-			self.assertEqual(len(conn.received_messages), 1)
-			self.assertTrue(message_type in conn.received_messages.keys(), "Message of type %s not found in .received_messages" % message_type)
-			self.assertIsInstance(conn.received_messages[message_type], message_class)
 
 	def test_connect(self):
 		c = Cube(connection=Mock())
