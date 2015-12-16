@@ -51,6 +51,11 @@ class ConnectionTest(unittest.TestCase):
 		self.assertTrue(fake_socket.close.called)
 		self.assertIsNone(c.socket)
 
+	def test_not_connected_read(self):
+		c = Connection(('127.0.0.1', 62910))
+		self.assertIsNone(c.read())
+
+
 class CubeTest(unittest.TestCase):
 
 	def test_constructor(self):
