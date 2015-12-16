@@ -7,7 +7,10 @@ install:
 - pip install -r requirements.txt
 - pip install coveralls
 
-script: make test coverage
+script: #make test coverage
+- if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then make test_py2; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then make test_py3; fi
+- make coverage
 
 after_success:
   - coveralls
