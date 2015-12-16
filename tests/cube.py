@@ -4,14 +4,14 @@ import sys
 
 import datetime
 
-from pymax.messages import SetTemperatureAndModeMessage
+from pymax.messages import SetTemperatureAndModeMessage, FMessage
 
 if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_info.minor <= 2):
 	from mock import MagicMock, Mock
 else:
 	from unittest.mock import MagicMock, Mock
 
-from pymax.cube import Connection, Cube
+from pymax.cube import Connection, Cube, Room, Device
 from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse
 from response import HelloResponseBytes, MResponseBytes
 
@@ -71,3 +71,29 @@ class ConnectionTest(unittest.TestCase):
 		response = c.set_mode_vacation(123, '001122', temperature=123, end=datetime.datetime(2015, 12, 16, 12, 00, 00))
 		c.connection.send_message.assert_called_with(SetTemperatureAndModeMessage('001122', 123, 0x80, temperature=123, end=datetime.datetime(2015, 12, 16, 12, 00, 00)))
 		self.assertIsInstance(response, SetResponse)
+
+	def test_set_ntp_servers(self):
+		c = self._mocked_cube()
+		x = c.ntp_servers
+		c.connection.send_message.assert_called_with(FMessage())
+
+	def test_set_ntp_servers(self):
+		c = self._mocked_cube()
+		c.ntp_servers = ['foo', 'bar']
+		c.connection.send_message.assert_called_with(FMessage(['foo', 'bar']))
+
+	def test_rooms_no_messages(self):
+		connection = Mock()
+		connection.get_message = Mock(return_value=None)
+		c = Cube(connection=connection)
+		self.assertEqual(c.rooms, [])
+
+	def test_rooms(self):
+		connection = Mock()
+		connection.get_message = Mock(return_value=MResponse([MResponseBytes]))
+		c = Cube(connection=connection)
+		self.assertEqual(c.rooms, [
+			Room(room_id=1, name='Wohnzimmer', rf_address='122B65', devices=[
+				Device(type=2, rf_address='122B65', serial='MEQ1472997', name='Heizung'),
+			])
+		])

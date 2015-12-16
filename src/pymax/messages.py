@@ -46,6 +46,9 @@ class FMessage(BaseMessage):
 		s = ','.join((x.strip() for x in self.ntp_servers or []))
 		return bytearray(s, 'utf-8')
 
+	def __eq__(self, other):
+		return isinstance(other, FMessage) and self.ntp_servers == other.ntp_servers
+
 
 class SetMessage(BaseMessage):
 	base64payload = True
