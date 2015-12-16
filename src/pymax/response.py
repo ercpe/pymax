@@ -357,6 +357,9 @@ class FResponse(BaseResponse):
 	def __str__(self):
 		return "NTP Servers: %s" % ', '.join(self.ntp_servers)
 
+	def __eq__(self, other):
+		return isinstance(other, FResponse) and self.ntp_servers == other.ntp_servers
+
 
 class SetResponse(BaseResponse):
 
