@@ -7,9 +7,9 @@ import datetime
 from pymax.messages import SetTemperatureAndModeMessage, FMessage
 
 if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_info.minor <= 2):
-	from mock import MagicMock, Mock
+	from mock import Mock
 else:
-	from unittest.mock import MagicMock, Mock
+	from unittest.mock import Mock
 
 from pymax.cube import Connection, Cube, Room, Device
 from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse
