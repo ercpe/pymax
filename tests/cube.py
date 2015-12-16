@@ -17,6 +17,22 @@ from response import HelloResponseBytes, MResponseBytes
 
 class ConnectionTest(unittest.TestCase):
 
+	def test_constructor(self):
+		c = Cube('1.2.3.4')
+		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 62910))
+
+		c = Cube('1.2.3.4', 4567)
+		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 4567))
+
+		c = Cube(address='1.2.3.4')
+		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 62910))
+
+		c = Cube(address='1.2.3.4', port=9876)
+		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 9876))
+
+		c = Cube(connection=Connection(('1.2.3.4', 123)))
+		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 123))
+
 	def test_parse_message(self):
 
 		for message_type, message_bytes, message_class in [
