@@ -32,6 +32,8 @@ class Debugger(object):
 #         +++----------+---------- month: 1000 -> 8
 
 def date_to_dateuntil(date):
+	if date.year < 2000:
+		raise ValueError("Cannot store dates before 2000-01-01 as dateuntil")
 	a = b = 0
 
 	b = date.year - 2000
