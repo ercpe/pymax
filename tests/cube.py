@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
+import socket
 import unittest
 import sys
-
 import datetime
-
-from pymax.messages import SetTemperatureAndModeMessage, FMessage
 
 if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_info.minor <= 2):
 	from mock import Mock
 else:
 	from unittest.mock import Mock
 
+from pymax.messages import SetTemperatureAndModeMessage, FMessage
 from pymax.cube import Connection, Cube, Room, Device
 from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse
 from response import HelloResponseBytes, MResponseBytes
@@ -32,6 +31,21 @@ class ConnectionTest(unittest.TestCase):
 			self.assertTrue(message_type in conn.received_messages.keys(), "Message of type %s not found in .received_messages" % message_type)
 			self.assertIsInstance(conn.received_messages[message_type], message_class)
 
+	def test_disconnect_not_connected(self):
+		c = Mock(Connection)
+		c.disconnect()
+		self.assertFalse(c.send_message.called)
+
+	def test_disconnect(self):
+		fake_socket = Mock(socket.socket)
+		fake_socket.recv = Mock(return_value=bytearray())
+		fake_socket.close = Mock(return_value=None)
+
+		c = Connection(('127.0.0.1', 62910))
+		c.socket = fake_socket
+		c.disconnect()
+		self.assertTrue(fake_socket.close.called)
+		self.assertIsNone(c.socket)
 
 class CubeTest(unittest.TestCase):
 
