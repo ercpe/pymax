@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import socket
 import unittest
 import sys
@@ -93,6 +94,12 @@ class CubeTest(unittest.TestCase):
 		c.disconnect()
 		self.assertFalse(c.connection.connect.called)
 		self.assertTrue(c.connection.disconnect.called)
+
+	def test_context_manager_connect_on_enter(self):
+		with Cube(connection=Mock()) as cube:
+			self.assertTrue(cube.connection.connect.called)
+
+		self.assertTrue(cube.connection.disconnect.called)
 
 	def _mocked_cube(self):
 		conn = Mock()
