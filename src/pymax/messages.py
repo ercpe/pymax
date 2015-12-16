@@ -89,3 +89,15 @@ class SetTemperatureAndModeMessage(SetMessage):
 			payload += bytearray([(self.end.time().hour * 2) + (1 if self.end.time().minute >= 30 else 0)])
 
 		return payload
+
+	def __str__(self):
+		return "%s(mode=%s, temperature=%s, end=%s)" % (self.__class__.__name__, self.mode, self.temperature, self.end)
+
+	def __repr__(self):
+		return self.__str__()
+
+	def __eq__(self, other):
+		return isinstance(other, SetTemperatureAndModeMessage) and \
+				self.mode == other.mode and \
+				self.temperature == other.temperature and \
+				self.end == other.end

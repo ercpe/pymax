@@ -151,14 +151,23 @@ class Connection(Debugger):
 
 class Cube(object):
 
-	def __init__(self, address, port=62910):
-		self.connection = Connection((address, port))
+	def __init__(self, **kwargs):
+		if 'address' in kwargs:
+			self.connection = Connection((kwargs.get('address'), kwargs.get('port', None)))
+		else:
+			self.connection = kwargs.get('connection')
 
 	def __enter__(self):
 		self.connection.connect()
 		return self
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
+		self.connection.disconnect()
+
+	def connect(self):
+		self.connection.connect()
+
+	def disconnect(self):
 		self.connection.disconnect()
 
 	@property
