@@ -55,6 +55,15 @@ class ConnectionTest(unittest.TestCase):
 		c = Connection(('127.0.0.1', 62910))
 		self.assertIsNone(c.read())
 
+	def test_get_message(self):
+		c = Connection(('127.0.0.1', 62910))
+		self.assertFalse(c.get_message(F_RESPONSE))
+
+		c = Connection(('127.0.0.1', 62910))
+		c.parse_message(F_RESPONSE, b"ntp.homematic.com,ntp.homematic.com")
+		msg = FResponse(b"ntp.homematic.com,ntp.homematic.com")
+		self.assertEqual(c.get_message(F_RESPONSE), msg)
+
 
 class CubeTest(unittest.TestCase):
 
