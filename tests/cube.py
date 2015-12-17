@@ -10,7 +10,7 @@ if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_i
 else:
 	from unittest.mock import Mock
 
-from pymax.messages import SetTemperatureAndModeMessage, FMessage
+from pymax.messages import SetTemperatureAndModeMessage, FMessage, SetProgramMessage
 from pymax.cube import Connection, Cube, Room, Device
 from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse, CONFIGURATION_RESPONSE, \
 	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE
@@ -164,3 +164,9 @@ class CubeTest(unittest.TestCase):
 				Device(type=2, rf_address='122B65', serial='MEQ1472997', name='Heizung'),
 			])
 		])
+
+	def test_set_program(self):
+		c = self._mocked_cube()
+		response = c.set_program(1, '122b56', 1, [])
+		c.connection.send_message.assert_called_with(SetProgramMessage('122b56', 1, 1, []))
+		self.assertIsInstance(response, SetResponse)

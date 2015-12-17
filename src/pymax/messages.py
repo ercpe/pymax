@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import base64
 
-from pymax.util import date_to_dateuntil
+import struct
+
+from pymax.objects import ProgramSchedule
+from pymax.util import date_to_dateuntil, py_day_to_cube_day, pack_temp_and_time
 
 QUIT_MESSAGE = 'q'
 F_MESSAGE = 'f'
@@ -53,7 +56,8 @@ class FMessage(BaseMessage):
 class SetMessage(BaseMessage):
 	base64payload = True
 
-	TemperatureAndMode = [0x00, 0x04, 0x40, 0x00, 0x00, 0x00] # b'000440000000'
+	TemperatureAndMode = 0x440000000
+	Program = 0x410000000
 
 	def __init__(self, type, rf_addr, room_number):
 		super(SetMessage, self).__init__(S_MESSAGE)
@@ -62,11 +66,15 @@ class SetMessage(BaseMessage):
 		self.room_number = room_number
 
 	def get_payload(self):
-		return bytearray(self.type) + bytearray([
+		return bytearray(struct.pack('!Q', self.type)[-6:]) + bytearray([
 			int(self.rf_addr[0:2], 16),
 			int(self.rf_addr[2:4], 16),
 			int(self.rf_addr[4:6], 16)
 		]) + bytearray([self.room_number])
+
+	def __eq__(self, other):
+		return isinstance(other, SetMessage) and self.rf_addr == other.rf_addr and self.type == other.type and \
+			self.room_number == other.room_number
 
 
 class SetTemperatureAndModeMessage(SetMessage):
@@ -100,7 +108,36 @@ class SetTemperatureAndModeMessage(SetMessage):
 		return self.__str__()
 
 	def __eq__(self, other):
-		return isinstance(other, SetTemperatureAndModeMessage) and \
+		return super(SetTemperatureAndModeMessage, self).__eq__(other) and \
+				isinstance(other, SetTemperatureAndModeMessage) and \
 				self.mode == other.mode and \
 				self.temperature == other.temperature and \
 				self.end == other.end
+
+
+class SetProgramMessage(SetMessage):
+
+	def __init__(self, rf_addr, room_number, weekday, program):
+		super(SetProgramMessage, self).__init__(SetMessage.Program, rf_addr, room_number)
+		self.weekday = weekday
+		self.program = program or []
+
+		if len(self.program) > 13:
+			raise ValueError("Program message cannot contain more than 13 schedules per day")
+
+		if not all((isinstance(x, ProgramSchedule) for x in self.program)):
+			raise ValueError("Program message takes only ProgramSchedule instances")
+
+	def get_payload(self):
+		data = super(SetProgramMessage, self).get_payload()
+		data += bytearray([py_day_to_cube_day(self.weekday)])
+
+		# the cube happily accepts less than 13 * 2 bytes for the schedules on a day
+		# and will replace the the rest with "low temperature till midnight" schedules
+		for schedule in self.program:
+			data += pack_temp_and_time(schedule.temperature, schedule.end_time)
+
+		return data
+
+	def __eq__(self, other):
+		return super(SetProgramMessage, self).__eq__(other) and isinstance(other, SetProgramMessage) and self.weekday == other.weekday and self.program == other.program

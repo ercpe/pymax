@@ -4,7 +4,8 @@ import unittest
 
 import datetime
 
-from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage
+from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage
+from pymax.objects import ProgramSchedule
 
 
 class QuitMessageTest(unittest.TestCase):
@@ -82,4 +83,68 @@ class SetTemperatureAndModeMessageTest(unittest.TestCase):
 			#       date unt.
 			#                  time until
 			# | temp
+		]))
+
+
+class SetProgramMessageTest(unittest.TestCase):
+
+	def test_constructor_no_schedule(self):
+		msg = SetProgramMessage('foo', 1, 1, None)
+		self.assertEqual(msg.program, [])
+
+	def test_constructor_empty_schedule(self):
+		msg = SetProgramMessage('foo', 1, 1, [])
+		self.assertEqual(msg.program, [])
+
+	def test_constructor_too_many_schedules(self):
+		self.assertRaises(ValueError, SetProgramMessage, 'foo', 1, 1, [
+			None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+		])
+
+	def test_constructor_no_programschedules(self):
+		self.assertRaises(ValueError, SetProgramMessage, 'foo', 1, 1, [
+			1, 2, 3
+		])
+
+	def test_get_payload_empty(self):
+		msg = SetProgramMessage('122b65', 1, 1, [
+		])
+
+		b64payload = msg.to_bytes()[2:]
+		data = base64.b64decode(b64payload)
+
+		self.assertEqual(data, bytearray([
+			0x00, 0x04, 0x10, 0x00, 0x00, 0x00, # base string
+			0x12, 0x2b, 0x65, # rf addr
+			0x01, # room
+			0x03, # weekday (*cube* weekday)
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+		]))
+
+	def test_get_payload_one(self):
+		msg = SetProgramMessage('122b65', 1, 6, [
+			ProgramSchedule(16, 0, datetime.time(6, 5))
+		])
+
+		b64payload = msg.to_bytes()[2:]
+		data = base64.b64decode(b64payload)
+
+		self.assertEqual(data, bytearray([
+			0x00, 0x04, 0x10, 0x00, 0x00, 0x00, # base string
+			0x12, 0x2b, 0x65, # rf addr
+			0x01, # room
+			0x01, # weekday (*cube* weekday)
+			0x40, 0x49,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
+			# 0x00, 0x00,
 		]))

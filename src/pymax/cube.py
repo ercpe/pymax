@@ -5,7 +5,7 @@ import logging
 
 import collections
 
-from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage
+from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
 	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse, \
 	F_RESPONSE, FResponse, SET_RESPONSE, SetResponse
@@ -217,4 +217,8 @@ class Cube(object):
 
 	def set_mode(self, room, rf_addr, mode, *args, **kwargs):
 		self.connection.send_message(SetTemperatureAndModeMessage(rf_addr, room, mode, **kwargs))
+		return self.connection.get_message(SET_RESPONSE)
+
+	def set_program(self, room, rf_addr, weekday, program):
+		self.connection.send_message(SetProgramMessage(rf_addr, room, weekday, program))
 		return self.connection.get_message(SET_RESPONSE)
