@@ -60,3 +60,14 @@ def dateuntil_to_date(date_until):
 	day = a - (a >> 5 << 5)
 
 	return datetime.date(year+2000, month, day)
+
+def unpack_temp_and_time(temp_and_time):
+	a, b = tuple(temp_and_time)
+
+	temperature = (a >> 1) / 2.0
+	if a & 0x01:
+		minutes = b + 256
+	else:
+		minutes = b * 5
+
+	return temperature, minutes

@@ -3,7 +3,7 @@ import unittest
 
 import datetime
 
-from pymax.util import dateuntil_to_date, date_to_dateuntil
+from pymax.util import dateuntil_to_date, date_to_dateuntil, unpack_temp_and_time
 
 
 class UtilsTest(unittest.TestCase):
@@ -27,3 +27,14 @@ class UtilsTest(unittest.TestCase):
 	def test_invalid_date_to_dateuntil(self):
 		self.assertRaises(ValueError, date_to_dateuntil, datetime.date(1999, 1, 1))
 
+	def test_unpack_temp_and_time(self):
+		temperature, minutes = unpack_temp_and_time(bytearray([0x40, 0x49]))
+
+		self.assertEqual(temperature, 16)
+		self.assertEqual(minutes, 365)
+
+	def test_unpack_temp_and_time2(self):
+		temperature, minutes = unpack_temp_and_time(bytearray([0x41, 0x49]))
+
+		self.assertEqual(temperature, 16)
+		self.assertEqual(minutes, 329)
