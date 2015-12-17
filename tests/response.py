@@ -2,7 +2,8 @@
 import unittest
 import datetime
 
-from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, \
+from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, \
+	HelloResponse, \
 	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus, LResponse, FResponse, SetResponse
 
 HelloResponseBytes = bytearray([
@@ -39,8 +40,8 @@ ThermostatConfigurationBytes = bytearray(b'122b65,0hIrZQIBEABNRVExNDcyOTk3Oyc9CQ
 										 b'EQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIERCeF5EyXkSRSBFIEUgRSBFIEUgRSBFIEUgREJ4Xk'
 										 b'TJeRJFIEUgRSBFIEUgRSBFIEUgRSBEQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIA==')
 
-class BaseResponseTest(unittest.TestCase):
 
+class BaseResponseTest(unittest.TestCase):
 	def test_fix_length(self):
 		class FixedLengthResponse(BaseResponse):
 			length = 5
@@ -48,8 +49,8 @@ class BaseResponseTest(unittest.TestCase):
 			def _parse(self):
 				pass
 
-		self.assertRaises(ValueError, FixedLengthResponse, None) # empty
-		self.assertRaises(ValueError, FixedLengthResponse, bytearray()) # empty
+		self.assertRaises(ValueError, FixedLengthResponse, None)  # empty
+		self.assertRaises(ValueError, FixedLengthResponse, bytearray())  # empty
 		self.assertRaises(ValueError, FixedLengthResponse, bytearray([0]))  # too short
 		self.assertRaises(ValueError, FixedLengthResponse, bytearray([0, 0]))  # too short
 		self.assertRaises(ValueError, FixedLengthResponse, bytearray([0 for _ in range(0, 100)]))  # too long
@@ -61,8 +62,8 @@ class BaseResponseTest(unittest.TestCase):
 			def _parse(self):
 				pass
 
-		self.assertRaises(ValueError, MinLengthResponse, None) # empty
-		self.assertRaises(ValueError, MinLengthResponse, bytearray()) # empty
+		self.assertRaises(ValueError, MinLengthResponse, None)  # empty
+		self.assertRaises(ValueError, MinLengthResponse, bytearray())  # empty
 		self.assertRaises(ValueError, MinLengthResponse, bytearray([0]))  # too short
 
 	def test_max_length(self):
@@ -72,8 +73,8 @@ class BaseResponseTest(unittest.TestCase):
 			def _parse(self):
 				pass
 
-		self.assertRaises(ValueError, MaxLengthResponse, None) # empty
-		self.assertRaises(ValueError, MaxLengthResponse, bytearray()) # empty
+		self.assertRaises(ValueError, MaxLengthResponse, None)  # empty
+		self.assertRaises(ValueError, MaxLengthResponse, bytearray())  # empty
 		self.assertRaises(ValueError, MaxLengthResponse, bytearray([0 for _ in range(0, 100)]))  # too long
 
 	def test_bytes_to_int(self):
@@ -89,7 +90,6 @@ class BaseResponseTest(unittest.TestCase):
 
 
 class DiscoveryIdentifyResponseTest(unittest.TestCase):
-
 	def _make_response(self):
 		b = bytearray([
 			0x65, 0x51, 0x33, 0x4D, 0x61, 0x78, 0x41, 0x70,
@@ -116,7 +116,6 @@ class DiscoveryIdentifyResponseTest(unittest.TestCase):
 
 
 class DiscoveryNetworkConfigResponseTest(unittest.TestCase):
-
 	def _make_response(self):
 		b = bytearray([
 			0x65, 0x51, 0x33, 0x4d, 0x61, 0x78, 0x41, 0x70,
@@ -146,7 +145,6 @@ class DiscoveryNetworkConfigResponseTest(unittest.TestCase):
 
 
 class HelloResponseTest(unittest.TestCase):
-
 	def test_parsing(self):
 		response = HelloResponse(HelloResponseBytes)
 		self.assertEqual(response.serial, 'KEQ0523864')
@@ -160,7 +158,6 @@ class HelloResponseTest(unittest.TestCase):
 
 
 class MResponseTest(unittest.TestCase):
-
 	def _make_multi_response(self):
 		b1 = bytearray([
 			0x30, 0x30, 0x2C,
@@ -204,7 +201,6 @@ class MResponseTest(unittest.TestCase):
 
 
 class ConfigurationResponseTest(unittest.TestCase):
-
 	def test_cube_config(self):
 		response = ConfigurationResponse(CubeConfigurationBytes)
 
@@ -215,7 +211,6 @@ class ConfigurationResponseTest(unittest.TestCase):
 		self.assertEqual(response.portal_url, 'http://max.eq-3.de:80/cube')
 
 	def test_thermostat_config(self):
-
 		response = ConfigurationResponse(ThermostatConfigurationBytes)
 
 		self.assertEqual(response.device_type, DeviceRadiatorThermostatPlus)
@@ -233,6 +228,57 @@ class ConfigurationResponseTest(unittest.TestCase):
 		self.assertEqual(response.decalcification_day, 0)
 		self.assertEqual(response.decalcification_hour, 12)
 		self.assertEqual(response.max_valve_setting, 100)
+
+		self.assertTrue(len(response.week_program) > 0)
+
+		self.assertEqual(response.week_program, [
+			[  # saturday
+				(datetime.time(0, 0), datetime.time(6, 0), 17.0),
+				(datetime.time(6, 0), datetime.time(22, 35), 30.0),
+				(datetime.time(22, 35), datetime.time(0, 0), 17.0)
+			],
+			[  # sunday
+				(datetime.time(0, 0), datetime.time(6, 0), 17.0),
+				(datetime.time(6, 0), datetime.time(22, 5), 30.0),
+				(datetime.time(22, 5), datetime.time(0, 0), 17.0)
+			],
+			[ # monday
+				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
+				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
+				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
+				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
+				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			],
+			[ # tuesday
+				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
+				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
+				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
+				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
+				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			],
+			[ # wednesday
+				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
+				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
+				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
+				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
+				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			],
+			[ # thursdays
+				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
+				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
+				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
+				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
+				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			],
+			[ # friday
+				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
+				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
+				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
+				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
+				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			],
+
+		])
 
 
 class LResponseTest(unittest.TestCase):
@@ -268,7 +314,6 @@ class FResponseTest(unittest.TestCase):
 
 
 class SetResponseTest(unittest.TestCase):
-
 	def test_parsing(self):
 		response = SetResponse(bytearray("00,0,31", encoding='utf-8'))
 

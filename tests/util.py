@@ -32,9 +32,3 @@ class UtilsTest(unittest.TestCase):
 
 		self.assertEqual(temperature, 16)
 		self.assertEqual(minutes, 365)
-
-	def test_unpack_temp_and_time2(self):
-		temperature, minutes = unpack_temp_and_time(bytearray([0x41, 0x49]))
-
-		self.assertEqual(temperature, 16)
-		self.assertEqual(minutes, 329)

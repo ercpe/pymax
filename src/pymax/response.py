@@ -3,7 +3,7 @@ import base64
 
 import struct
 
-from pymax.util import Debugger
+from pymax.util import Debugger, unpack_temp_and_time
 import datetime
 import logging
 
@@ -302,7 +302,45 @@ class ConfigurationResponse(BaseResponse):
 		logger.debug("Boost:                     %s minutes, %s %%" % (self.boost_duration, self.boost_valve_setting))
 		logger.debug("Decalcification:           day %s, hour %s" % (self.decalcification_day, self.decalcification_hour))
 		logger.debug("Max valve setting:         %s%% (raw: %s)" % (self.max_valve_setting, self.max_valve_raw))
-		# todo: parse week program
+		self.week_program = self._parse_week_program(config[11:])
+
+	def _parse_week_program(self, buffer):
+		cube_day_names = ('Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+
+		program = []
+
+		for day in range(0, 7):
+			day_schedules = []
+			offset = day * 26
+			logger.debug("Day: %s (%s)" % (day, cube_day_names[day]))
+
+			day_config = buffer[offset:offset+26]
+
+			start = datetime.time()
+
+			for schedule_offset in range(0, 26, 2):
+				schedule_bytes = day_config[schedule_offset:schedule_offset+2]
+				temp, time = unpack_temp_and_time(schedule_bytes)
+
+				if time >= 1440:
+					end = datetime.time()
+				else:
+					hours = int(time / 60.0)
+					if hours >= 24:
+						t = datetime.time()
+					else:
+						minutes = time - int(hours * 60)
+						end = datetime.time(hour=hours, minute=minutes)
+
+				day_schedules.append((start, end, temp))
+				start = end
+
+				if time >= 1440:
+					break
+
+			program.append(day_schedules)
+
+		return program
 
 	def __str__(self):
 		s = "%s config: serial %s, address: %s" % (device_type_name(self.device_type), self.serial_number, self.device_addr)

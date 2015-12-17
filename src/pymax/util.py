@@ -65,9 +65,8 @@ def unpack_temp_and_time(temp_and_time):
 	a, b = tuple(temp_and_time)
 
 	temperature = (a >> 1) / 2.0
-	if a & 0x01:
-		minutes = b + 256
-	else:
-		minutes = b * 5
+
+	minutes = b + ((a & 0x01) * 256)
+	minutes *= 5
 
 	return temperature, minutes
