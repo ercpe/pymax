@@ -51,7 +51,7 @@ def date_to_dateuntil(date):
 def dateuntil_to_date(date_until):
 	a, b = date_until
 
-	year = b - (b >>4 << 4)
+	year = b - (b >> 4 << 4)
 
 	month = a >> 5 << 1
 	if b & 0x40:
@@ -85,3 +85,14 @@ def pack_temp_and_time(temperature, time):
 	b = minutes
 
 	return bytearray([a, b])
+
+def cube_day_to_py_day(day):
+	if day <= 1:
+		return 5 + day
+	return day - 2
+
+def py_day_to_cube_day(day):
+	d = day + 2
+	if d >= 7:
+		return d - 7
+	return d
