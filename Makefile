@@ -13,7 +13,15 @@ test_py3:
 
 test: test_py2 test_py3
 
-travis: test_default_python
+compile:
+	@echo Compiling python code
+	python -m compileall src/
+
+compile_optimized:
+	@echo Compiling python code optimized
+	python -m compileall src/
+
+travis: compile compile_optimized test_default_python
 
 coverage:
 	coverage erase
