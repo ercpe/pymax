@@ -3,7 +3,7 @@ import unittest
 
 import datetime
 
-from pymax.util import dateuntil_to_date, date_to_dateuntil, unpack_temp_and_time
+from pymax.util import dateuntil_to_date, date_to_dateuntil, unpack_temp_and_time, pack_temp_and_time
 
 
 class UtilsTest(unittest.TestCase):
@@ -32,3 +32,8 @@ class UtilsTest(unittest.TestCase):
 
 		self.assertEqual(temperature, 16)
 		self.assertEqual(minutes, 365)
+
+	def test_pack_temp_and_time(self):
+		arr = pack_temp_and_time(16, datetime.time(6, 5))
+
+		self.assertEqual(arr, bytearray([0x40, 0x49]))

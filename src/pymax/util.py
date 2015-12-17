@@ -70,3 +70,18 @@ def unpack_temp_and_time(temp_and_time):
 	minutes *= 5
 
 	return temperature, minutes
+
+def pack_temp_and_time(temperature, time):
+	a = b = 0
+
+	a = int(temperature * 2.0)
+	a <<= 1
+
+	minutes = int(((time.hour * 60) + time.minute) / 5)
+	if minutes >= 256:
+		a &= 0x01
+		minutes -= 256
+
+	b = minutes
+
+	return bytearray([a, b])
