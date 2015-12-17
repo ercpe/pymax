@@ -25,5 +25,5 @@ travis: compile compile_optimized test_default_python
 
 coverage:
 	coverage erase
-	PYTHONPATH=".:./src" coverage run --source='src' --omit='src/test.py' --omit='src/fakecube.py' --branch tests/__main__.py
+	PYTHONPATH=".:./src" coverage run --source='src' --omit='src/test.py,src/fakecube.py' --branch tests/__main__.py
 	coverage report -m
