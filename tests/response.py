@@ -283,7 +283,27 @@ class ConfigurationResponseTest(unittest.TestCase):
 
 class LResponseTest(unittest.TestCase):
 	def test_parsing(self):
-		response = LResponse("CxIrZfcSGWQ8AOsA")
+		response = LResponse("BhIrZfcSGWQ8AOsA")
+
+		self.assertEqual(response.rf_addr, '122b65')
+		self.assertFalse(response.weekly_program)
+		self.assertTrue(response.manual_program)
+		self.assertFalse(response.vacation_program)
+		self.assertFalse(response.boost_program)
+
+		self.assertTrue(response.dst_active)
+		self.assertTrue(response.gateway_known)
+		self.assertFalse(response.panel_locked)
+		self.assertTrue(response.link_ok)
+		self.assertFalse(response.battery_low)
+
+		self.assertTrue(response.status_initialized)
+		self.assertFalse(response.is_answer)
+		self.assertFalse(response.is_error)
+		self.assertFalse(response.is_valid)
+
+	def test_parsing_with_extra_fields(self):
+		response = LResponse("CxIrZfcSGWQ8AOsF")
 
 		self.assertEqual(response.rf_addr, '122b65')
 		self.assertFalse(response.weekly_program)
@@ -291,6 +311,8 @@ class LResponseTest(unittest.TestCase):
 		self.assertFalse(response.vacation_program)
 		self.assertFalse(response.boost_program)
 		self.assertEqual(response.valve_position, 100)
+		self.assertEqual(response.temperature, 30.0)
+		self.assertEqual(response.time_until, datetime.timedelta(hours=2, minutes=30))
 
 		self.assertTrue(response.dst_active)
 		self.assertTrue(response.gateway_known)

@@ -370,6 +370,7 @@ class LResponse(BaseResponse):
 
 	def _parse_extra_fields(self, data):
 		self.valve_position, self.temperature, du1, du2, time_until = struct.unpack('5B', data[7:12])
+		self.time_until = datetime.timedelta(minutes=time_until * 30)
 		self.temperature /= 2.0
 
 	def __str__(self):
