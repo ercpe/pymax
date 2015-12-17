@@ -2,6 +2,7 @@
 import unittest
 import datetime
 
+from pymax.objects import ProgramSchedule
 from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, \
 	HelloResponse, \
 	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus, LResponse, FResponse, SetResponse
@@ -232,52 +233,51 @@ class ConfigurationResponseTest(unittest.TestCase):
 		self.assertTrue(len(response.week_program) > 0)
 
 		self.assertEqual(response.week_program, [
-			[  # saturday
-				(datetime.time(0, 0), datetime.time(6, 0), 17.0),
-				(datetime.time(6, 0), datetime.time(22, 35), 30.0),
-				(datetime.time(22, 35), datetime.time(0, 0), 17.0)
+			[
+				ProgramSchedule(17.0, datetime.time(0, 0), datetime.time(6, 0)),
+				ProgramSchedule(30.0, datetime.time(6, 0), datetime.time(22, 35)),
+				ProgramSchedule(17.0, datetime.time(22, 35), datetime.time(0, 0)),
 			],
-			[  # sunday
-				(datetime.time(0, 0), datetime.time(6, 0), 17.0),
-				(datetime.time(6, 0), datetime.time(22, 5), 30.0),
-				(datetime.time(22, 5), datetime.time(0, 0), 17.0)
+			[
+				ProgramSchedule(17.0, datetime.time(0, 0), datetime.time(6, 0)),
+				ProgramSchedule(30.0, datetime.time(6, 0), datetime.time(22, 5)),
+				ProgramSchedule(17.0, datetime.time(22, 5), datetime.time(0, 0)),
 			],
-			[ # monday
-				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
-				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
-				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
-				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
-				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			[
+				ProgramSchedule(17.0, datetime.time(0, 0), datetime.time(5, 30)),
+				ProgramSchedule(30.0, datetime.time(5, 30), datetime.time(7, 50)),
+				ProgramSchedule(17.0, datetime.time(7, 50), datetime.time(16, 45)),
+				ProgramSchedule(30.0, datetime.time(16, 45), datetime.time(22, 50)),
+				ProgramSchedule(17.0, datetime.time(22, 50), datetime.time(0, 0)),
 			],
-			[ # tuesday
-				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
-				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
-				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
-				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
-				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			[
+				ProgramSchedule(17.0, datetime.time(0, 0), datetime.time(5, 30)),
+				ProgramSchedule(30.0, datetime.time(5, 30), datetime.time(7, 50)),
+				ProgramSchedule(17.0, datetime.time(7, 50), datetime.time(16, 45)),
+				ProgramSchedule(30.0, datetime.time(16, 45), datetime.time(22, 50)),
+				ProgramSchedule(17.0, datetime.time(22, 50), datetime.time(0, 0)),
 			],
-			[ # wednesday
-				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
-				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
-				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
-				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
-				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			[
+				ProgramSchedule(17.0, datetime.time(0, 0), datetime.time(5, 30)),
+				ProgramSchedule(30.0, datetime.time(5, 30), datetime.time(7, 50)),
+				ProgramSchedule(17.0, datetime.time(7, 50), datetime.time(16, 45)),
+				ProgramSchedule(30.0, datetime.time(16, 45), datetime.time(22, 50)),
+				ProgramSchedule(17.0, datetime.time(22, 50), datetime.time(0, 0)),
 			],
-			[ # thursdays
-				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
-				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
-				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
-				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
-				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			[
+				ProgramSchedule(17.0, datetime.time(0, 0), datetime.time(5, 30)),
+				ProgramSchedule(30.0, datetime.time(5, 30), datetime.time(7, 50)),
+				ProgramSchedule(17.0, datetime.time(7, 50), datetime.time(16, 45)),
+				ProgramSchedule(30.0, datetime.time(16, 45), datetime.time(22, 50)),
+				ProgramSchedule(17.0, datetime.time(22, 50), datetime.time(0, 0)),
 			],
-			[ # friday
-				(datetime.time(0, 0), datetime.time(5, 30), 17.0),
-				(datetime.time(5, 30), datetime.time(7, 50), 30.0),
-				(datetime.time(7, 50), datetime.time(16, 45), 17.0),
-				(datetime.time(16, 45), datetime.time(22, 50), 30.0),
-				(datetime.time(22, 50), datetime.time(0, 0), 17.0)
+			[
+				ProgramSchedule(17.0, datetime.time(0, 0), datetime.time(5, 30)),
+				ProgramSchedule(30.0, datetime.time(5, 30), datetime.time(7, 50)),
+				ProgramSchedule(17.0, datetime.time(7, 50), datetime.time(16, 45)),
+				ProgramSchedule(30.0, datetime.time(16, 45), datetime.time(22, 50)),
+				ProgramSchedule(17.0, datetime.time(22, 50), datetime.time(0, 0)),
 			],
-
 		])
 
 

@@ -9,6 +9,7 @@ from response import *
 from messages import *
 from cube import *
 from util import *
+from objects import *
 
 import logging
 logging.basicConfig(

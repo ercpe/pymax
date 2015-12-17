@@ -3,6 +3,7 @@ import base64
 
 import struct
 
+from pymax.objects import ProgramSchedule
 from pymax.util import Debugger, unpack_temp_and_time
 import datetime
 import logging
@@ -32,6 +33,7 @@ def device_type_name(device_type):
 	if device_type < len(device_type_names):
 		return device_type_names[device_type]
 	return None
+
 
 class BaseResponse(Debugger):
 	length = None
@@ -319,18 +321,10 @@ class ConfigurationResponse(BaseResponse):
 				schedule_bytes = day_config[schedule_offset:schedule_offset+2]
 				temp, time = unpack_temp_and_time(schedule_bytes)
 
-				if time >= 1440:
-					end = datetime.time()
-				else:
-					hours = int(time / 60.0)
-					if hours >= 24:
-						t = datetime.time()
-					else:
-						minutes = time - int(hours * 60)
-						end = datetime.time(hour=hours, minute=minutes)
+				schedule = ProgramSchedule(temp, start, time)
+				day_schedules.append(schedule)
 
-				day_schedules.append((start, end, temp))
-				start = end
+				start = schedule.end_time
 
 				if time >= 1440:
 					break
