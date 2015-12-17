@@ -305,14 +305,11 @@ class ConfigurationResponse(BaseResponse):
 		self.week_program = self._parse_week_program(config[11:])
 
 	def _parse_week_program(self, buffer):
-		cube_day_names = ('Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
-
 		program = []
 
 		for day in range(0, 7):
 			day_schedules = []
 			offset = day * 26
-			logger.debug("Day: %s (%s)" % (day, cube_day_names[day]))
 
 			day_config = buffer[offset:offset+26]
 
