@@ -5,7 +5,7 @@ import unittest
 import datetime
 
 from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
-	SetTemperaturesMessage
+	SetTemperaturesMessage, SetValveConfigMessage
 from pymax.objects import ProgramSchedule
 
 
@@ -154,4 +154,32 @@ class SetTemperaturesMessageTest(unittest.TestCase):
 			0x11, # offset
 			0x0c, # window open temp
 			0x02, # window open duration
+		]))
+
+
+class SetValveSettingsMessageTest(unittest.TestCase):
+
+	def test_constructor(self):
+		# boost valve position is an integer (e.g. 80 for 80%)
+		msg = SetValveConfigMessage('122b65', 1, 10, 80, 1, 2, 100)
+		self.assertEqual(msg.boost_valve_position, 0.8)
+
+		# boost valve position is a float (e.g. 0.8 for 80%)
+		msg = SetValveConfigMessage('122b65', 1, 10, 0.8, 1, 2, 100)
+		self.assertEqual(msg.boost_valve_position, 0.8)
+
+	def test_get_payload(self):
+		msg = SetValveConfigMessage('122b65', 1, 10, 80, 1, 2, 100)
+
+		b64payload = msg.to_bytes()[2:]
+		data = base64.b64decode(b64payload)
+
+		self.assertEqual(data, bytearray([
+			0x00, 0x04, 0x12, 0x00, 0x00, 0x00, # base string
+			0x12, 0x2b, 0x65, # rf addr
+			0x01, # room
+			0x50, # boost
+			0x62, # decalc
+			0xFF, # max valve setting
+			0x00, # valve offset
 		]))

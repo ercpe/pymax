@@ -6,7 +6,7 @@ import logging
 import collections
 
 from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
-	SetTemperaturesMessage
+	SetTemperaturesMessage, SetValveConfigMessage
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
 	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse, \
 	F_RESPONSE, FResponse, SET_RESPONSE, SetResponse
@@ -226,4 +226,8 @@ class Cube(object):
 
 	def set_temperatures(self, room, rf_addr, comfort, eco, min, max, temperature_offset, window_open, window_open_duration):
 		self.connection.send_message(SetTemperaturesMessage(rf_addr, room, comfort, eco, min, max, temperature_offset, window_open, window_open_duration))
+		return self.connection.get_message(SET_RESPONSE)
+
+	def set_valve_config(self, room, rf_addr, boost_duration, boost_valve_position, decalc_day, decalc_hour, max_valve_setting):
+		self.connection.send_message(SetValveConfigMessage(rf_addr, room, boost_duration, boost_valve_position, decalc_day, decalc_hour, max_valve_setting))
 		return self.connection.get_message(SET_RESPONSE)

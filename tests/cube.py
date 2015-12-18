@@ -10,7 +10,8 @@ if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_i
 else:
 	from unittest.mock import Mock
 
-from pymax.messages import SetTemperatureAndModeMessage, FMessage, SetProgramMessage, SetTemperaturesMessage
+from pymax.messages import SetTemperatureAndModeMessage, FMessage, SetProgramMessage, SetTemperaturesMessage, \
+	SetValveConfigMessage
 from pymax.cube import Connection, Cube, Room, Device
 from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse, CONFIGURATION_RESPONSE, \
 	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE
@@ -219,4 +220,10 @@ class CubeTest(unittest.TestCase):
 		c = self._mocked_cube()
 		response = c.set_temperatures(1, '122b56', 1, 2, 3, 4, 5, 6, 7)
 		c.connection.send_message.assert_called_with(SetTemperaturesMessage('122b56', 1, 1, 2, 3, 4, 5, 6, 7))
+		self.assertIsInstance(response, SetResponse)
+
+	def test_set_valve_config(self):
+		c = self._mocked_cube()
+		response = c.set_valve_config(1, '122b56', 10, 0.5, 0, 1, 10)
+		c.connection.send_message.assert_called_with(SetValveConfigMessage('122b56', 1, 10, 0.5, 0, 1, 10))
 		self.assertIsInstance(response, SetResponse)

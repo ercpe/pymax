@@ -59,6 +59,7 @@ class SetMessage(BaseMessage):
 	TemperatureAndMode = 0x440000000
 	Program = 0x410000000
 	Temperatures = 0x11000000
+	ValveConfig = 0x0412000000
 
 	def __init__(self, type, rf_addr, room_number):
 		super(SetMessage, self).__init__(S_MESSAGE)
@@ -176,3 +177,31 @@ class SetTemperaturesMessage(SetMessage):
 			self.temperature_offset == other.temperature_offset and \
 			self.window_open_temperature == other.window_open_temperature and \
 			self.window_open_duration == other.window_open_duration
+
+
+class SetValveConfigMessage(SetMessage):
+
+	def __init__(self, rf_addr, room_number, boost_duration, boost_valve_position, decalc_day, decalc_hour, max_valve_setting):
+		super(SetValveConfigMessage, self).__init__(SetMessage.ValveConfig, rf_addr, room_number)
+		self.boost_duration = boost_duration
+		self.boost_valve_position = boost_valve_position / 100.0 if isinstance(boost_valve_position, int) else boost_valve_position
+		self.decalc_day = py_day_to_cube_day(decalc_day)
+		self.decalc_hour = decalc_hour
+		self.max_valve_setting = max_valve_setting
+
+	def get_payload(self):
+		boost = int(self.boost_valve_position * 20) | (int(self.boost_duration / 5) << 5)
+		decalc = self.decalc_hour | (self.decalc_day << 5)
+		max_valve = int((self.max_valve_setting * 255) / 100.0)
+
+		return super(SetValveConfigMessage, self).get_payload() + bytearray([
+			boost, decalc, max_valve, 0x00
+		])
+
+	def __eq__(self, other):
+		return super(SetValveConfigMessage, self).__eq__(other) and \
+			isinstance(other, SetValveConfigMessage) and \
+			self.boost_duration == other.boost_duration and \
+			self.boost_valve_position == other.boost_valve_position and \
+			self.decalc_day == other.decalc_day and \
+			self.decalc_hour == other.decalc_hour
