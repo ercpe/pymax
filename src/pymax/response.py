@@ -350,7 +350,7 @@ class LResponse(BaseResponse):
 		self.rf_addr = "{0:02x}{1:02x}{2:02x}".format(rf1, rf2, rf3)
 
 		self.weekly_program = not (flags2 & 0x01 or flags2 & 0x02)
-		self.manual_program = flags2 & 0x01 and not flags2 & 0x02
+		self.manual_program = bool(flags2 & 0x01 and not flags2 & 0x02)
 		self.vacation_program = bool(flags2 & 0x02 and not flags2 & 0x01)
 		self.boost_program = bool(flags2 & 0x01 and flags2 & 0x02)
 		self.dst_active = flags2 & 0x08
