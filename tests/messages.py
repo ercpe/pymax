@@ -4,7 +4,8 @@ import unittest
 
 import datetime
 
-from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage
+from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
+	SetTemperaturesMessage
 from pymax.objects import ProgramSchedule
 
 
@@ -107,8 +108,7 @@ class SetProgramMessageTest(unittest.TestCase):
 		])
 
 	def test_get_payload_empty(self):
-		msg = SetProgramMessage('122b65', 1, 1, [
-		])
+		msg = SetProgramMessage('122b65', 1, 1, [])
 
 		b64payload = msg.to_bytes()[2:]
 		data = base64.b64decode(b64payload)
@@ -134,4 +134,24 @@ class SetProgramMessageTest(unittest.TestCase):
 			0x01, # room
 			0x01, # weekday (*cube* weekday)
 			0x40, 0x49,
+		]))
+
+class SetTemperaturesMessageTest(unittest.TestCase):
+
+	def test_get_payload(self):
+		msg = SetTemperaturesMessage('122b65', 1, 1, 2, 3, 4, 5, 6, 10)
+		b64payload = msg.to_bytes()[2:]
+		data = base64.b64decode(b64payload)
+
+		self.assertEqual(data, bytearray([
+			0x00, 0x00, 0x11, 0x00, 0x00, 0x00, # base string
+			0x12, 0x2b, 0x65, # rf addr
+			0x01, # room
+			0x02, # comfort
+			0x04, # eco
+			0x08, # max
+			0x06, # min
+			0x11, # offset
+			0x0c, # window open temp
+			0x02, # window open duration
 		]))

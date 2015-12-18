@@ -221,7 +221,7 @@ class ConfigurationResponseTest(unittest.TestCase):
 		self.assertEqual(response.eco_temperature, 19.5)
 		self.assertEqual(response.max_set_point_temperature, 30.5)
 		self.assertEqual(response.min_set_point_temperature, 4.5)
-		self.assertEqual(response.temperature_offset, 7.0)
+		self.assertEqual(response.temperature_offset, 0.0)
 		self.assertEqual(response.window_open_temperature, 12.0)
 		self.assertEqual(response.window_open_duration, 15.0)
 		self.assertEqual(response.boost_duration, 20.0)

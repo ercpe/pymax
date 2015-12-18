@@ -283,7 +283,7 @@ class ConfigurationResponse(BaseResponse):
 		ConfigurationResponse.eco_temperature = property(lambda x: x.eco_temperature_raw / 2.0)
 		ConfigurationResponse.max_set_point_temperature = property(lambda x: x.max_set_point_temperature_raw / 2.0)
 		ConfigurationResponse.min_set_point_temperature = property(lambda x: x.min_set_point_temperature_raw / 2.0)
-		ConfigurationResponse.temperature_offset = property(lambda x: (x.temperature_offset_raw / 2.0) + 3.5)
+		ConfigurationResponse.temperature_offset = property(lambda x: (x.temperature_offset_raw / 2.0) - 3.5)
 		ConfigurationResponse.window_open_temperature = property(lambda x: x.window_open_temperature_raw / 2.0)
 		ConfigurationResponse.window_open_duration = property(lambda x: x.window_open_duration_raw * 5.0)
 		ConfigurationResponse.boost_duration = property(lambda x: (x.boost_raw >> 5) * 5 if x.boost_raw >> 5 < 7 else 60)

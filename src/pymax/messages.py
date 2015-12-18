@@ -58,6 +58,7 @@ class SetMessage(BaseMessage):
 
 	TemperatureAndMode = 0x440000000
 	Program = 0x410000000
+	Temperatures = 0x11000000
 
 	def __init__(self, type, rf_addr, room_number):
 		super(SetMessage, self).__init__(S_MESSAGE)
@@ -141,3 +142,37 @@ class SetProgramMessage(SetMessage):
 
 	def __eq__(self, other):
 		return super(SetProgramMessage, self).__eq__(other) and isinstance(other, SetProgramMessage) and self.weekday == other.weekday and self.program == other.program
+
+
+class SetTemperaturesMessage(SetMessage):
+	def __init__(self, rf_addr, room_number, comfort, eco, min, max, offset, window_open, window_open_duration):
+		super(SetTemperaturesMessage, self).__init__(SetMessage.Temperatures, rf_addr, room_number)
+		self.comfort_temperature = comfort
+		self.eco_temperature = eco
+		self.min_temperature = min
+		self.max_temperature = max
+		self.temperature_offset = offset
+		self.window_open_temperature = window_open
+		self.window_open_duration = window_open_duration
+
+	def get_payload(self):
+		return super(SetTemperaturesMessage, self).get_payload() + \
+			bytearray([
+				int(self.comfort_temperature * 2),
+				int(self.eco_temperature * 2),
+				int(self.max_temperature * 2),
+				int(self.min_temperature * 2),
+				int((self.temperature_offset + 3.5) * 2),
+				int(self.window_open_temperature * 2),
+				int(self.window_open_duration / 5)
+			])
+
+	def __eq__(self, other):
+		return super(SetTemperaturesMessage, self).__eq__(other) and isinstance(other, SetTemperaturesMessage) and \
+			self.comfort_temperature == other.comfort_temperature and \
+			self.eco_temperature == other.eco_temperature and \
+			self.min_temperature == other.min_temperature and \
+			self.max_temperature == other.max_temperature and \
+			self.temperature_offset == other.temperature_offset and \
+			self.window_open_temperature == other.window_open_temperature and \
+			self.window_open_duration == other.window_open_duration
