@@ -16,6 +16,23 @@ from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse,
 	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE
 from response import HelloResponseBytes, MResponseBytes, CubeConfigurationBytes
 
+
+class StaticResponseSocket(object):
+	def __init__(self, responses):
+		self.response = bytearray()
+		for x in responses:
+			self.response += x
+			self.response += bytearray([0x0d, 0x0a])
+		self.pos = 0
+
+	def recv(self, size):
+		if self.pos >= len(self.response):
+			raise socket.timeout
+		x = self.response[self.pos:self.pos + size]
+		self.pos += size
+		return x
+
+
 class ConnectionTest(unittest.TestCase):
 
 	def test_parse_message(self):
@@ -57,21 +74,6 @@ class ConnectionTest(unittest.TestCase):
 		self.assertIsNone(c.read())
 
 	def test_read(self):
-		class StaticResponseSocket(object):
-			def __init__(self, responses):
-				self.response = bytearray()
-				for x in responses:
-					self.response += x
-					self.response += bytearray([0x0d, 0x0a])
-				self.pos = 0
-
-			def recv(self, size):
-				if self.pos >= len(self.response):
-					raise socket.timeout
-				x = self.response[self.pos:self.pos + size]
-				self.pos += size
-				return x
-
 		c = Connection(('127.0.0.1', 62910))
 		c.socket = StaticResponseSocket([
 			bytearray('H:', encoding='utf-8') + HelloResponseBytes,
@@ -79,6 +81,14 @@ class ConnectionTest(unittest.TestCase):
 		])
 		c.read()
 		self.assertEqual(len(c.received_messages), 2)
+
+	def test_read_unknown_response(self):
+		c = Connection(('127.0.0.1', 62910))
+		c.socket = StaticResponseSocket([
+			bytearray('X:', encoding='utf-8'),
+		])
+		c.read()
+		self.assertEqual(len(c.received_messages), 0)
 
 	def test_get_message(self):
 		c = Connection(('127.0.0.1', 62910))
