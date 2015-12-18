@@ -163,8 +163,10 @@ class CubeTest(unittest.TestCase):
 		c.connection.send_message.assert_called_with(SetTemperatureAndModeMessage('001122', 123, 0x80, temperature=123, end=datetime.datetime(2015, 12, 16, 12, 00, 00)))
 		self.assertIsInstance(response, SetResponse)
 
-	def test_set_ntp_servers(self):
-		c = self._mocked_cube()
+	def test_get_ntp_servers(self):
+		conn = Mock()
+		conn.get_message = Mock(return_value=FResponse(bytearray("ntp.homematic.com,ntp.homematic.com", encoding='utf-8')))
+		c = Cube(connection=conn)
 		x = c.ntp_servers
 		c.connection.send_message.assert_called_with(FMessage())
 
