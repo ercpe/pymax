@@ -170,6 +170,14 @@ class CubeTest(unittest.TestCase):
 		x = c.ntp_servers
 		c.connection.send_message.assert_called_with(FMessage())
 
+	def test_get_ntp_servers_no_response(self):
+		conn = Mock()
+		conn.get_message = Mock(return_value=None)
+		c = Cube(connection=conn)
+		c.ntp_servers
+		c.connection.send_message.assert_called_with(FMessage())
+		self.assertIsNone(c.ntp_servers)
+
 	def test_set_ntp_servers(self):
 		c = self._mocked_cube()
 		c.ntp_servers = ['foo', 'bar']
