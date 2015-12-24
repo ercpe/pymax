@@ -164,7 +164,7 @@ class Cube(object):
 		conn = kwargs.get('connection', None)
 		if not conn:
 			addr = kwargs.get('address', addr)
-			port = kwargs.get('port', port)
+			port = kwargs.get('port', port) or port
 			conn = Connection((addr, port))
 		self.connection = conn
 
