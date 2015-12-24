@@ -157,7 +157,10 @@ class Cube(object):
 		port = 62910
 
 		if len(args) == 1:
-			addr, = args
+			if isinstance(args[0], DiscoveryNetworkConfigurationResponse):
+				addr = args[0].ip_address
+			else:
+				addr, = args
 		elif len(args) == 2:
 			addr, port = args
 
@@ -180,6 +183,14 @@ class Cube(object):
 
 	def disconnect(self):
 		self.connection.disconnect()
+
+	@property
+	def info(self):
+		msg = self.connection.get_message(HELLO_RESPONSE)
+		if not msg:
+			return None
+
+		return msg
 
 	@property
 	def rooms(self):
