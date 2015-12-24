@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 import socket
 import unittest
 import sys
@@ -14,8 +13,9 @@ from pymax.messages import SetTemperatureAndModeMessage, FMessage, SetProgramMes
 	SetValveConfigMessage
 from pymax.cube import Connection, Cube, Room, Device
 from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse, CONFIGURATION_RESPONSE, \
-	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE
-from response import HelloResponseBytes, MResponseBytes, CubeConfigurationBytes
+	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE, \
+	DiscoveryNetworkConfigurationResponse
+from response import HelloResponseBytes, MResponseBytes, CubeConfigurationBytes, DiscoveryNetworkConfigResponseBytes
 
 
 class StaticResponseSocket(object):
@@ -118,6 +118,9 @@ class CubeTest(unittest.TestCase):
 
 		c = Cube(connection=Connection(('1.2.3.4', 123)))
 		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 123))
+
+		c = Cube(DiscoveryNetworkConfigurationResponse(DiscoveryNetworkConfigResponseBytes))
+		self.assertEqual(c.connection.addr_port, ('10.10.10.153', 62910))
 
 	def test_connect(self):
 		c = Cube(connection=Mock())
