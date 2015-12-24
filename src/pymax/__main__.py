@@ -9,7 +9,7 @@ import sys
 from pymax.cube import Discovery, Cube
 from pymax.response import device_type_name
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
 	parser = ArgumentParser()
 	parser.add_argument('-v', '--verbose', action="count", default=1)
 	parser.add_argument('-s', '--serial', help='Query cube with serial')
