@@ -324,7 +324,7 @@ class ConfigurationResponse(BaseResponse):
 				schedule = ProgramSchedule(temp, start, time)
 				day_schedules.append(schedule)
 
-				start = schedule.end_time
+				start = schedule.end_minutes
 
 				if time >= 1440:
 					break

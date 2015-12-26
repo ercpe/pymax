@@ -4,7 +4,7 @@ import base64
 import struct
 
 from pymax.objects import ProgramSchedule
-from pymax.util import date_to_dateuntil, py_day_to_cube_day, pack_temp_and_time, Debugger
+from pymax.util import date_to_dateuntil, py_day_to_cube_day, pack_temp_and_time, Debugger, unpack_temp_and_time
 
 QUIT_MESSAGE = 'q'
 F_MESSAGE = 'f'
@@ -137,10 +137,10 @@ class SetProgramMessage(SetMessage, Debugger):
 		# the cube happily accepts less than 13 * 2 bytes for the schedules on a day
 		# and will replace the the rest with "low temperature till midnight" schedules
 		for schedule in self.program:
-			data += pack_temp_and_time(schedule.temperature, schedule.end_time)
-
-		# clear out the rest
-		data += bytearray([0, 0]) * (13 - len(self.program))
+			result = pack_temp_and_time(schedule.temperature, schedule.end_minutes)
+			rev_temp, rev_minutes = unpack_temp_and_time(result)
+			#print("{0}°C, {1} results in {2:2X} {3:2X} ({2:08b} {3:08b}), revd: {4}°C, {5} minutes ({6} h)".format(schedule.temperature, schedule.end_minutes, result[0], result[1], rev_temp, rev_minutes, rev_minutes / 60.0))
+			data += result
 
 		self.dump_bytes(data, "SetProgramMessage payload")
 

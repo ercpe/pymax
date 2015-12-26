@@ -76,7 +76,14 @@ def unpack_temp_and_time(temp_and_time):
 def pack_temp_and_time(temperature, time):
 	temp = int(temperature * 2.0)
 	temp <<= 9
-	minutes = int(((time.hour * 60) + time.minute) / 5)
+
+	if isinstance(time, int):
+		# time = minutes
+		minutes = int(time / 5.0)
+	else:
+		# time => datetime.time()
+		minutes = int(((time.hour * 60) + time.minute) / 5)
+
 	return bytearray(struct.pack(">H", temp | minutes))
 
 def cube_day_to_py_day(day):
