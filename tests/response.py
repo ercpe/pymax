@@ -340,4 +340,4 @@ class SetResponseTest(unittest.TestCase):
 		self.assertEqual(response.duty_cycle, 0)
 		self.assertEqual(response.command_result, 0)
 		self.assertTrue(response.command_success)
-		self.assertEqual(response.free_mem_slots, 31)
+		self.assertEqual(response.free_mem_slots, 49)

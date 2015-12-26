@@ -396,7 +396,7 @@ class SetResponse(BaseResponse):
 	def _parse(self):
 		self.duty_cycle, self.command_result, self.free_mem_slots = self.data.decode('utf-8').split(',')
 		self.duty_cycle = int(self.duty_cycle, 16)
-		self.free_mem_slots = int(self.free_mem_slots)
+		self.free_mem_slots = int(self.free_mem_slots, 16)
 		self.command_result = int(self.command_result)
 		self.command_success = self.command_result == 0
 
