@@ -7,6 +7,7 @@ import collections
 
 from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
 	SetTemperaturesMessage, SetValveConfigMessage
+from pymax.objects import DeviceList
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
 	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse, \
 	F_RESPONSE, FResponse, SET_RESPONSE, SetResponse
@@ -112,23 +113,21 @@ class Connection(Debugger):
 			logger.debug("Remaining: %s messages" % len(messages))
 
 	def parse_message(self, message_type, buffer):
-		response = None
-		if message_type == HELLO_RESPONSE:
-			response = HelloResponse(buffer)
-		elif message_type == M_RESPONSE:
-			response = MResponse(buffer)
-		elif message_type == CONFIGURATION_RESPONSE:
-			response = ConfigurationResponse(buffer)
-		elif message_type == L_RESPONSE:
-			response = LResponse(buffer)
-		elif message_type == F_RESPONSE:
-			response = FResponse(buffer)
-		elif message_type == SET_RESPONSE:
-			response = SetResponse(buffer)
-		else:
-			logger.warning("Cannot process message type %s" % message_type)
+		message_classes = {
+			HELLO_RESPONSE: HelloResponse,
+			M_RESPONSE: MResponse,
+			CONFIGURATION_RESPONSE: ConfigurationResponse,
+			L_RESPONSE: LResponse,
+			F_RESPONSE: FResponse,
+			SET_RESPONSE: SetResponse,
+		}
 
-		if response:
+		clazz = message_classes.get(message_type, None)
+
+		if not clazz:
+			logger.warning("Cannot process message type %s" % message_type)
+		else:
+			response = clazz(buffer)
 			logger.info("Received message %s: %s" % (type(response).__name__, response))
 			self.received_messages[message_type] = response
 
@@ -170,6 +169,7 @@ class Cube(object):
 			port = kwargs.get('port', port) or port
 			conn = Connection((addr, port))
 		self.connection = conn
+		self._devices = DeviceList()
 
 	def __enter__(self):
 		self.connection.connect()
@@ -202,6 +202,10 @@ class Cube(object):
 				]) for room_data in msg.rooms
 			]
 		return []
+
+	@property
+	def devices(self):
+		return self._devices
 
 	def get_ntp_servers(self):
 		self.connection.send_message(FMessage())

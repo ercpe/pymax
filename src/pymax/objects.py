@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import collections
 import datetime
 
 class ProgramSchedule(object):
@@ -24,3 +23,12 @@ class ProgramSchedule(object):
 		return "%s(temperature=%s, start=%s, end=%s)" % (
 			self.__class__.__name__, self.temperature, self.begin_minutes, self.end_minutes
 		)
+
+
+class DeviceList(list):
+
+	def __init__(self, iterable=None):
+		super(DeviceList, self).__init__(iterable or [])
+
+	def for_room(self, room_id):
+		return filter(lambda d: d.room_id == room_id, self)
