@@ -35,9 +35,9 @@ class UtilsTest(unittest.TestCase):
 		self.assertEqual(minutes, 365)
 
 	def test_pack_temp_and_time(self):
-		arr = pack_temp_and_time(16, datetime.time(6, 5))
+		self.assertEqual(pack_temp_and_time(16, datetime.time(6, 5)), bytearray([0x40, 0x49]))
 
-		self.assertEqual(arr, bytearray([0x40, 0x49]))
+		self.assertEqual(pack_temp_and_time(24, datetime.time(22, 0)), bytearray([0x61, 0x08]))
 
 	def test_cube_day_to_py_day(self):
 		for cube_day, py_day in (

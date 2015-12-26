@@ -4,6 +4,8 @@ import logging
 
 import datetime
 
+import struct
+
 logger = logging.getLogger(__name__)
 
 class Debugger(object):
@@ -72,19 +74,10 @@ def unpack_temp_and_time(temp_and_time):
 	return temperature, minutes
 
 def pack_temp_and_time(temperature, time):
-	a = b = 0
-
-	a = int(temperature * 2.0)
-	a <<= 1
-
+	temp = int(temperature * 2.0)
+	temp <<= 9
 	minutes = int(((time.hour * 60) + time.minute) / 5)
-	if minutes >= 256:
-		a &= 0x01
-		minutes -= 256
-
-	b = minutes
-
-	return bytearray([a, b])
+	return bytearray(struct.pack(">H", temp | minutes))
 
 def cube_day_to_py_day(day):
 	if day <= 1:

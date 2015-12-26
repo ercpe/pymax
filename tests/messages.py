@@ -118,7 +118,7 @@ class SetProgramMessageTest(unittest.TestCase):
 			0x12, 0x2b, 0x65, # rf addr
 			0x01, # room
 			0x03, # weekday (*cube* weekday)
-		]))
+		]) + bytearray([0, 0]) * 13)
 
 	def test_get_payload_one(self):
 		msg = SetProgramMessage('122b65', 1, 6, [
@@ -134,7 +134,7 @@ class SetProgramMessageTest(unittest.TestCase):
 			0x01, # room
 			0x01, # weekday (*cube* weekday)
 			0x40, 0x49,
-		]))
+		]) + bytearray([0, 0]) * 12)
 
 class SetTemperaturesMessageTest(unittest.TestCase):
 

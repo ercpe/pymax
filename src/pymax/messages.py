@@ -4,7 +4,7 @@ import base64
 import struct
 
 from pymax.objects import ProgramSchedule
-from pymax.util import date_to_dateuntil, py_day_to_cube_day, pack_temp_and_time
+from pymax.util import date_to_dateuntil, py_day_to_cube_day, pack_temp_and_time, Debugger
 
 QUIT_MESSAGE = 'q'
 F_MESSAGE = 'f'
@@ -117,7 +117,7 @@ class SetTemperatureAndModeMessage(SetMessage):
 				self.end == other.end
 
 
-class SetProgramMessage(SetMessage):
+class SetProgramMessage(SetMessage, Debugger):
 
 	def __init__(self, rf_addr, room_number, weekday, program):
 		super(SetProgramMessage, self).__init__(SetMessage.Program, rf_addr, room_number)
@@ -138,6 +138,11 @@ class SetProgramMessage(SetMessage):
 		# and will replace the the rest with "low temperature till midnight" schedules
 		for schedule in self.program:
 			data += pack_temp_and_time(schedule.temperature, schedule.end_time)
+
+		# clear out the rest
+		data += bytearray([0, 0]) * (13 - len(self.program))
+
+		self.dump_bytes(data, "SetProgramMessage payload")
 
 		return data
 
