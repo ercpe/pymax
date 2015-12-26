@@ -46,7 +46,7 @@ class ConnectionTest(unittest.TestCase):
 			(F_RESPONSE, bytearray(b"ntp.homematic.com,ntp.homematic.com"), FResponse),
 			(SET_RESPONSE, bytearray(b"00,0,31"), SetResponse),
 		]:
-			conn = Connection((None, None))
+			conn = Connection((None, None), message_handler=lambda x: x)
 
 			conn.parse_message(message_type, message_bytes)
 
@@ -64,18 +64,18 @@ class ConnectionTest(unittest.TestCase):
 		fake_socket.recv = Mock(return_value=bytearray())
 		fake_socket.close = Mock(return_value=None)
 
-		c = Connection(('127.0.0.1', 62910))
+		c = Connection(('127.0.0.1', 62910), message_handler=lambda x: x)
 		c.socket = fake_socket
 		c.disconnect()
 		self.assertTrue(fake_socket.close.called)
 		self.assertIsNone(c.socket)
 
 	def test_not_connected_read(self):
-		c = Connection(('127.0.0.1', 62910))
+		c = Connection(('127.0.0.1', 62910), message_handler=lambda x: x)
 		self.assertIsNone(c.read())
 
 	def test_read(self):
-		c = Connection(('127.0.0.1', 62910))
+		c = Connection(('127.0.0.1', 62910), message_handler=lambda x: x)
 		c.socket = StaticResponseSocket([
 			bytearray('H:', encoding='utf-8') + HelloResponseBytes,
 			bytearray('M:', encoding='utf-8') + MResponseBytes
@@ -84,7 +84,7 @@ class ConnectionTest(unittest.TestCase):
 		self.assertEqual(len(c.received_messages), 2)
 
 	def test_read_unknown_response(self):
-		c = Connection(('127.0.0.1', 62910))
+		c = Connection(('127.0.0.1', 62910), message_handler=lambda x: x)
 		c.socket = StaticResponseSocket([
 			bytearray('X:', encoding='utf-8'),
 		])
@@ -92,10 +92,10 @@ class ConnectionTest(unittest.TestCase):
 		self.assertEqual(len(c.received_messages), 0)
 
 	def test_get_message(self):
-		c = Connection(('127.0.0.1', 62910))
+		c = Connection(('127.0.0.1', 62910), message_handler=lambda x: x)
 		self.assertFalse(c.get_message(F_RESPONSE))
 
-		c = Connection(('127.0.0.1', 62910))
+		c = Connection(('127.0.0.1', 62910), message_handler=lambda x: x)
 		c.parse_message(F_RESPONSE, b"ntp.homematic.com,ntp.homematic.com")
 		msg = FResponse(b"ntp.homematic.com,ntp.homematic.com")
 		self.assertEqual(c.get_message(F_RESPONSE), msg)
@@ -116,7 +116,7 @@ class CubeTest(unittest.TestCase):
 		c = Cube(address='1.2.3.4', port=9876)
 		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 9876))
 
-		c = Cube(connection=Connection(('1.2.3.4', 123)))
+		c = Cube(connection=Connection(('1.2.3.4', 123), message_handler=None))
 		self.assertEqual(c.connection.addr_port, ('1.2.3.4', 123))
 
 		c = Cube(DiscoveryNetworkConfigurationResponse(DiscoveryNetworkConfigResponseBytes))

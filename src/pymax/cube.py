@@ -54,10 +54,11 @@ class Discovery(Debugger):
 class Connection(Debugger):
 	MESSAGE_Q = 'q'  # quit
 
-	def __init__(self, conn):
+	def __init__(self, conn, message_handler):
 		self.addr_port = conn
 		self.socket = None
 		self.received_messages = {}
+		self.message_handler = message_handler
 
 	def connect(self):
 		if self.socket:
@@ -124,12 +125,13 @@ class Connection(Debugger):
 
 		clazz = message_classes.get(message_type, None)
 
-		if not clazz:
-			logger.warning("Cannot process message type %s" % message_type)
-		else:
+		if clazz:
 			response = clazz(buffer)
 			logger.info("Received message %s: %s" % (type(response).__name__, response))
+			self.message_handler(response)
 			self.received_messages[message_type] = response
+		else:
+			logger.warning("Cannot process message type %s" % message_type)
 
 	def send_message(self, msg):
 		message_bytes = msg.to_bytes()
@@ -163,11 +165,14 @@ class Cube(object):
 		elif len(args) == 2:
 			addr, port = args
 
+		def _message_handler(msg):
+			self.handle_message(msg)
+
 		conn = kwargs.get('connection', None)
 		if not conn:
 			addr = kwargs.get('address', addr)
 			port = kwargs.get('port', port) or port
-			conn = Connection((addr, port))
+			conn = Connection((addr, port), message_handler=_message_handler)
 		self.connection = conn
 		self._devices = DeviceList()
 
@@ -183,6 +188,11 @@ class Cube(object):
 
 	def disconnect(self):
 		self.connection.disconnect()
+
+	def handle_message(self, msg):
+		#if isinstance(msg, LResponse):
+		#	self.devices.update
+		logger.info("Handle message: %s" % msg)
 
 	@property
 	def info(self):
