@@ -2,7 +2,8 @@
 import unittest
 import datetime
 
-from pymax.objects import ProgramSchedule
+from pymax.objects import ProgramSchedule, DeviceList
+
 
 class ProgramScheduleTest(unittest.TestCase):
 
@@ -29,3 +30,10 @@ class ProgramScheduleTest(unittest.TestCase):
 		self.assertEqual(ps.temperature, 10)
 		self.assertEqual(ps.begin_minutes, 60)
 		self.assertEqual(ps.end_minutes, 60)
+
+
+class TestDeviceList(unittest.TestCase):
+
+	def test_for_room(self):
+		dl = DeviceList()
+		self.assertEqual(list(dl.for_room(0)), [])

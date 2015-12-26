@@ -7,7 +7,7 @@ import collections
 
 from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
 	SetTemperaturesMessage, SetValveConfigMessage
-from pymax.objects import DeviceList
+from pymax.objects import DeviceList, Device
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
 	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse, \
 	F_RESPONSE, FResponse, SET_RESPONSE, SetResponse
@@ -16,7 +16,6 @@ from pymax.util import Debugger
 logger = logging.getLogger(__name__)
 
 Room = collections.namedtuple('Room', ('room_id', 'name', 'rf_address', 'devices'))
-Device = collections.namedtuple('Device', ('type', 'rf_address', 'serial', 'name'))
 
 class Discovery(Debugger):
 	DISCOVERY_TYPE_IDENTIFY = 'I'
@@ -208,7 +207,8 @@ class Cube(object):
 		if msg:
 			return [
 				Room(*room_data, devices=[
-					Device(device_data[1], device_data[2], device_data[3], device_data[4]) for device_data in filter(lambda x: x[5] == room_data[0], msg.devices)
+					#type=device_data[1]
+					Device(rf_address=device_data[2], serial=device_data[3], name=device_data[4]) for device_data in filter(lambda x: x[5] == room_data[0], msg.devices)
 				]) for room_data in msg.rooms
 			]
 		return []

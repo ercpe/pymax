@@ -209,7 +209,7 @@ class CubeTest(unittest.TestCase):
 		c = Cube(connection=connection)
 		self.assertEqual(c.rooms, [
 			Room(room_id=1, name='Wohnzimmer', rf_address='122B65', devices=[
-				Device(type=2, rf_address='122B65', serial='MEQ1472997', name='Heizung'),
+				Device(rf_address='122B65', serial='MEQ1472997', name='Heizung'),
 			])
 		])
 

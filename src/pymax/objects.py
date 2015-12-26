@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import collections
 import datetime
 
 class ProgramSchedule(object):
@@ -32,3 +33,11 @@ class DeviceList(list):
 
 	def for_room(self, room_id):
 		return filter(lambda d: d.room_id == room_id, self)
+
+
+DeviceType = collections.namedtuple('Device', ('rf_address', 'serial', 'name'))
+class Device(DeviceType):
+	def __new__(cls, **kwargs):
+		for f in DeviceType._fields:
+			kwargs.setdefault(f, None)
+		super(Device, cls).__new__(cls, **kwargs)
