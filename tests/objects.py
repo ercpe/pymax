@@ -52,6 +52,8 @@ class RFAddrTest(unittest.TestCase):
 	def test_constructor_valid_values(self):
 		self.assertEqual(RFAddr('122b65')._bytes, bytearray([0x12, 0x2b, 0x65]))
 		self.assertEqual(RFAddr(bytearray([0x12, 0x2b, 0x65]))._bytes, bytearray([0x12, 0x2b, 0x65]))
+		self.assertEqual(RFAddr((0x12, 0x2b, 0x65))._bytes, bytearray([0x12, 0x2b, 0x65]))
+
 
 	def test_equals(self):
 		# string: case insensitive

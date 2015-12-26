@@ -28,18 +28,22 @@ class ProgramSchedule(object):
 
 class RFAddr(object):
 
-	def __init__(self, bytes_or_string):
-		if bytes_or_string is None or not bytes_or_string:
+	def __init__(self, byte_tuple_string):
+		if byte_tuple_string is None or not byte_tuple_string:
 			raise ValueError
 
-		if isinstance(bytes_or_string, bytearray):
-			if len(bytes_or_string) != 3:
+		if isinstance(byte_tuple_string, bytearray):
+			if len(byte_tuple_string) != 3:
 				raise ValueError("Need exactly 3 bytes when passing a bytearray")
-			self._bytes = bytes_or_string
+			self._bytes = byte_tuple_string
+		elif isinstance(byte_tuple_string, tuple):
+			if len(byte_tuple_string) != 3:
+				raise ValueError("Need exactly 3 elements when passing a tuple")
+			self._bytes = bytearray(list(byte_tuple_string))
 		else:
-			if len(bytes_or_string) != 6:
+			if len(byte_tuple_string) != 6:
 				raise ValueError("Need a string of length 6 passing a string")
-			self._bytes = bytearray([int(bytes_or_string[s:s+2], 16) for s in range(0, 6, 2)])
+			self._bytes = bytearray([int(byte_tuple_string[s:s + 2], 16) for s in range(0, 6, 2)])
 
 	def __eq__(self, other):
 		if isinstance(other, str):
