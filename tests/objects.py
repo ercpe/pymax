@@ -98,11 +98,12 @@ class RFAddrTest(unittest.TestCase):
 		self.assertRaises(ValueError, RFAddr, bytearray([0x01]))
 		self.assertRaises(ValueError, RFAddr, 'a')
 
+		self.assertRaises(ValueError, RFAddr, (1, 2))
+
 	def test_constructor_valid_values(self):
 		self.assertEqual(RFAddr('122b65')._bytes, bytearray([0x12, 0x2b, 0x65]))
 		self.assertEqual(RFAddr(bytearray([0x12, 0x2b, 0x65]))._bytes, bytearray([0x12, 0x2b, 0x65]))
 		self.assertEqual(RFAddr((0x12, 0x2b, 0x65))._bytes, bytearray([0x12, 0x2b, 0x65]))
-
 
 	def test_equals(self):
 		# string: case insensitive
@@ -137,5 +138,10 @@ class DeviceTest(unittest.TestCase):
 		self.assertEqual(Device(rf_address=RFAddr('122b65')), Device(rf_address='122b65'))
 		self.assertEqual(Device(rf_address=RFAddr('122b65')), {'rf_address': '122b65'})
 		self.assertNotEqual(Device(foo='bar'), Device(baz='bat', blah='blubb'))
+		self.assertNotEqual(Device(foo='bar', baz='bat'), Device(blah='blubb'))
 		self.assertNotEqual(Device(foo='bar'), {'baz': 'bat', 'blah': 'blubb'})
 		self.assertNotEqual(Device(foo='bar'), 1)
+
+	def test_misc(self):
+		d = Device(foo='bar')
+		self.assertEqual(repr(d), str(d))
