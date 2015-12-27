@@ -99,7 +99,6 @@ class Device(dict):
 		if item in self:
 			return self[item]
 		raise AttributeError("%s has no attribute %s" % (self.__class__.__name__, item))
-		#return super(Device, self).__getattr__(item)
 
 	def __eq__(self, other):
 		if isinstance(other, dict) or isinstance(other, Device):

@@ -3,7 +3,7 @@ import base64
 
 import struct
 
-from pymax.objects import ProgramSchedule
+from pymax.objects import ProgramSchedule, RFAddr
 from pymax.util import Debugger, unpack_temp_and_time
 import datetime
 import logging
@@ -89,7 +89,7 @@ class DiscoveryIdentifyResponse(BaseResponse):
 		self.serial = self.data[8:18].decode('utf-8')
 		self.request_id = chr(self.data[18])
 		self.request_type = chr(self.data[19])
-		self.rf_address = ''.join("%02x" % x for x in self.data[21:24])
+		self.rf_address = RFAddr(self.data[21:24])
 		self.fw_version = ''.join("%02x" % x for x in self.data[24:26])
 
 	def __str__(self):
@@ -120,7 +120,7 @@ class HelloResponse(BaseResponse):
 	def _parse(self):
 		parts = tuple(self.data.split(b','))
 		self.serial = parts[0].decode('utf-8')
-		self.rf_address = parts[1].decode('utf-8')
+		self.rf_address = RFAddr(parts[1].decode('utf-8'))
 		self.fw_version = parts[2].decode('utf-8')
 		# unknown = parts[3]
 		self.http_connection_id = parts[4]
@@ -168,7 +168,7 @@ class MResponse(MultiResponse):
 		for _ in range(0, self.num_rooms):
 			room_id, name_length = struct.unpack('bb', data[pos:pos+2])
 			room_name = data[pos + 2:pos + 2 + name_length].decode('utf-8')
-			group_rf_address = ''.join("%X" % x for x in data[pos+name_length + 2 : pos+name_length + 2 + 3])
+			group_rf_address = RFAddr(data[pos+name_length + 2 : pos+name_length + 2 + 3])
 			logger.debug("Room ID: %s, Room Name: %s, Group RF address: %s" % (room_id, room_name, group_rf_address))
 			self.rooms.append((room_id, room_name, group_rf_address))
 			# set pos to start of next section
@@ -181,7 +181,7 @@ class MResponse(MultiResponse):
 
 		for device_idx in range(0, self.num_devices):
 			device_type = data[pos]
-			device_rf_address = ''.join("%X" % x for x in data[pos+1 : pos+1 + 3])
+			device_rf_address = RFAddr(data[pos+1 : pos+1 + 3])
 			device_serial = data[pos+4:pos+14].decode('utf-8')
 			device_name_length = data[pos+14]
 			device_name = data[pos+15:pos+15+device_name_length].decode('utf-8')
@@ -208,7 +208,7 @@ class ConfigurationResponse(BaseResponse):
 		data_length = data[0]
 		logger.debug("Data length for device config: %s" % data_length)
 
-		self.device_addr = ''.join("%X" % x for x in data[1:4])
+		self.device_addr = RFAddr(data[1:4])
 		self.device_type, self.room_id, self.firmware_version, self.test_result = struct.unpack('bbbb', data[4:8])
 		self.serial_number = data[8:17].decode('utf-8')
 
@@ -347,7 +347,7 @@ class LResponse(BaseResponse):
 	def _parse(self):
 		data = bytearray(base64.b64decode(self.data))
 		submessage_len, rf1, rf2, rf3, unknown, flags1, flags2 = struct.unpack('B3BBBB', bytearray(data[:7]))
-		self.rf_addr = "{0:02x}{1:02x}{2:02x}".format(rf1, rf2, rf3)
+		self.rf_addr = RFAddr((rf1, rf2, rf3))
 
 		self.weekly_program = not (flags2 & 0x01 or flags2 & 0x02)
 		self.manual_program = bool(flags2 & 0x01 and not flags2 & 0x02)

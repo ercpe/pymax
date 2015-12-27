@@ -7,7 +7,7 @@ import collections
 
 from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
 	SetTemperaturesMessage, SetValveConfigMessage
-from pymax.objects import DeviceList, Device
+from pymax.objects import DeviceList, Device, RFAddr
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
 	HELLO_RESPONSE, M_RESPONSE, MultiPartResponses, CONFIGURATION_RESPONSE, ConfigurationResponse, L_RESPONSE, LResponse, \
 	F_RESPONSE, FResponse, SET_RESPONSE, SetResponse
@@ -189,8 +189,12 @@ class Cube(object):
 		self.connection.disconnect()
 
 	def handle_message(self, msg):
-		#if isinstance(msg, LResponse):
-		#	self.devices.update
+		if isinstance(msg, MResponse):
+			for idx, device_type, rf_address, serial, name, room_id in msg.devices:
+				self.devices.update(rf_address=rf_address, serial=serial, name=name, room_id=room_id)
+		elif isinstance(msg, ConfigurationResponse):
+			pass
+
 		logger.info("Handle message: %s" % msg)
 
 	@property
@@ -207,7 +211,6 @@ class Cube(object):
 		if msg:
 			return [
 				Room(*room_data, devices=[
-					#type=device_data[1]
 					Device(rf_address=device_data[2], serial=device_data[3], name=device_data[4]) for device_data in filter(lambda x: x[5] == room_data[0], msg.devices)
 				]) for room_data in msg.rooms
 			]
