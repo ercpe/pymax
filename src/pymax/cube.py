@@ -50,30 +50,68 @@ class Discovery(Debugger):
 		recv_socket.close()
 
 
-class Connection(Debugger):
-	MESSAGE_Q = 'q'  # quit
+class CubeConnectionException(Exception):
+	pass
 
-	def __init__(self, conn, message_handler):
-		self.addr_port = conn
-		self.socket = None
+
+class Cube(object):
+
+	def __init__(self, *args, **kwargs):
+		addr = None
+		port = 62910
+
+		if not args:
+			addr = kwargs.get('address', addr) or addr
+			port = kwargs.get('port', port) or port
+		if len(args) == 1:
+			if isinstance(args[0], DiscoveryNetworkConfigurationResponse):
+				addr = args[0].ip_address
+			else:
+				addr, = args
+		elif len(args) == 2:
+			addr, port = args
+
+		self.addr_port = addr, port
+		self._socket = None
+		self._devices = DeviceList()
+		self._cube_info = None
+		self._ntp_servers = None
 		self.received_messages = {}
-		self.message_handler = message_handler
+
+	@property
+	def socket(self):
+		if self._socket is None:
+			raise CubeConnectionException("Not connected")
+		return self._socket
+
+	def __enter__(self):
+		self.connect()
+		return self
+
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		self.disconnect()
 
 	def connect(self):
-		if self.socket:
-			logger.error(".connect() called when socket already present")
-		else:
-			logger.info("Connecting to cube %s:%s" % self.addr_port)
-			self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.socket.settimeout(1)
-			self.socket.connect(self.addr_port)
-			self.read()
+		if self._socket:
+			raise CubeConnectionException("Already connected")
+
+		logger.info("Connecting to cube %s:%s" % self.addr_port)
+		self._socket = self._create_socket()
+		self.read()
+
+	def _create_socket(self):
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.settimeout(1)
+		s.connect(self.addr_port)
+		return s
+
+	def disconnect(self):
+		if self._socket:
+			self.send_message(QuitMessage())
+			self._socket.close()
+		self._socket = None
 
 	def read(self):
-		if not self.socket:
-			logger.error(".read() called when not connected")
-			return
-
 		buffer_size = 4096
 		buffer = bytearray([])
 		more = True
@@ -103,11 +141,13 @@ class Connection(Debugger):
 				while len(messages) > 1 and chr(messages[1][0]) == message_type:
 					multi_responses.append(messages.pop(1)[2:])
 
-				logger.info("'%s' message with %s parts" % (message_type, len(multi_responses)))
-				self.parse_message(message_type, multi_responses)
+				logger.debug("'%s' message with %s parts" % (message_type, len(multi_responses)))
+				response = self.parse_message(message_type, multi_responses)
 			else:
-				logger.info("'%s' single-part message" % message_type)
-				self.parse_message(message_type, current[2:])
+				logger.debug("'%s' single-part message" % message_type)
+				response = self.parse_message(message_type, current[2:])
+
+			self.handle_message(response)
 
 			messages.pop(0)
 			logger.debug("Remaining: %s messages" % len(messages))
@@ -127,70 +167,19 @@ class Connection(Debugger):
 		if clazz:
 			response = clazz(buffer)
 			logger.info("Received message %s: %s" % (type(response).__name__, response))
-			self.message_handler(response)
 			self.received_messages[message_type] = response
+			return response
 		else:
 			logger.warning("Cannot process message type %s" % message_type)
-
-	def send_message(self, msg):
-		message_bytes = msg.to_bytes()
-		logger.info("Sending '%s' message (%s bytes)" % (msg.__class__.__name__, len(message_bytes)))
-		if not self.socket:
-			self.connect()
-		self.socket.send(message_bytes)
-		self.read()
-
-	def get_message(self, message_type):
-		return self.received_messages.get(message_type, None)
-
-	def disconnect(self):
-		if self.socket:
-			self.send_message(QuitMessage())
-			self.socket.close()
-		self.socket = None
-
-
-class Cube(object):
-
-	def __init__(self, *args, **kwargs):
-		addr = None
-		port = 62910
-
-		if len(args) == 1:
-			if isinstance(args[0], DiscoveryNetworkConfigurationResponse):
-				addr = args[0].ip_address
-			else:
-				addr, = args
-		elif len(args) == 2:
-			addr, port = args
-
-		def _message_handler(msg):
-			self.handle_message(msg)
-
-		conn = kwargs.get('connection', None)
-		if not conn:
-			addr = kwargs.get('address', addr)
-			port = kwargs.get('port', port) or port
-			conn = Connection((addr, port), message_handler=_message_handler)
-		self.connection = conn
-		self._devices = DeviceList()
-
-	def __enter__(self):
-		self.connection.connect()
-		return self
-
-	def __exit__(self, exc_type, exc_val, exc_tb):
-		self.connection.disconnect()
-
-	def connect(self):
-		self.connection.connect()
-
-	def disconnect(self):
-		self.connection.disconnect()
+			return None
 
 	def handle_message(self, msg):
 		logger.info("Handle message: %s" % msg)
-		if isinstance(msg, MResponse):
+		if isinstance(msg, HelloResponse):
+			self._cube_info = msg
+		elif isinstance(msg, FResponse):
+			self._ntp_servers = msg.ntp_servers
+		elif isinstance(msg, MResponse):
 			for idx, device_type, rf_address, serial, name, room_id in msg.devices:
 				self.devices.update(rf_address=rf_address, serial=serial, name=name, room_id=room_id)
 		elif isinstance(msg, ConfigurationResponse):
@@ -198,17 +187,22 @@ class Cube(object):
 		elif isinstance(msg, LResponse):
 			self.devices.update(rf_address=msg.rf_addr, settings=msg)
 
+	def send_message(self, msg):
+		message_bytes = msg.to_bytes()
+		logger.info("Sending '%s' message (%s bytes)" % (msg.__class__.__name__, len(message_bytes)))
+		self.socket.send(message_bytes)
+		self.read()
+
+	def get_message(self, message_type):
+		return self.received_messages.get(message_type, None)
+
 	@property
 	def info(self):
-		msg = self.connection.get_message(HELLO_RESPONSE)
-		if not msg:
-			return None
-
-		return msg
+		return self._cube_info
 
 	@property
 	def rooms(self):
-		msg = self.connection.get_message(M_RESPONSE)
+		msg = self.get_message(M_RESPONSE)
 		if msg:
 			return [
 				Room(*room_data, devices=[
@@ -222,14 +216,12 @@ class Cube(object):
 		return self._devices
 
 	def get_ntp_servers(self):
-		self.connection.send_message(FMessage())
-		fmsg = self.connection.get_message(F_RESPONSE)
-		if fmsg:
-			return fmsg.ntp_servers
-		return None
+		if self._ntp_servers is None:
+			self.send_message(FMessage())
+		return self._ntp_servers
 
 	def set_ntp_servers(self, ntp_servers):
-		self.connection.send_message(FMessage(ntp_servers))
+		self.send_message(FMessage(ntp_servers))
 
 	ntp_servers = property(get_ntp_servers, set_ntp_servers)
 
@@ -246,17 +238,17 @@ class Cube(object):
 		return self.set_mode(room, rf_addr, SetTemperatureAndModeMessage.ModeVacation, temperature=temperature, end=end)
 
 	def set_mode(self, room, rf_addr, mode, *args, **kwargs):
-		self.connection.send_message(SetTemperatureAndModeMessage(rf_addr, room, mode, **kwargs))
-		return self.connection.get_message(SET_RESPONSE)
+		self.send_message(SetTemperatureAndModeMessage(rf_addr, room, mode, **kwargs))
+		return self.get_message(SET_RESPONSE)
 
 	def set_program(self, room, rf_addr, weekday, program):
-		self.connection.send_message(SetProgramMessage(rf_addr, room, weekday, program))
-		return self.connection.get_message(SET_RESPONSE)
+		self.send_message(SetProgramMessage(rf_addr, room, weekday, program))
+		return self.get_message(SET_RESPONSE)
 
 	def set_temperatures(self, room, rf_addr, comfort, eco, min, max, temperature_offset, window_open, window_open_duration):
-		self.connection.send_message(SetTemperaturesMessage(rf_addr, room, comfort, eco, min, max, temperature_offset, window_open, window_open_duration))
-		return self.connection.get_message(SET_RESPONSE)
+		self.send_message(SetTemperaturesMessage(rf_addr, room, comfort, eco, min, max, temperature_offset, window_open, window_open_duration))
+		return self.get_message(SET_RESPONSE)
 
 	def set_valve_config(self, room, rf_addr, boost_duration, boost_valve_position, decalc_day, decalc_hour, max_valve_setting):
-		self.connection.send_message(SetValveConfigMessage(rf_addr, room, boost_duration, boost_valve_position, decalc_day, decalc_hour, max_valve_setting))
-		return self.connection.get_message(SET_RESPONSE)
+		self.send_message(SetValveConfigMessage(rf_addr, room, boost_duration, boost_valve_position, decalc_day, decalc_hour, max_valve_setting))
+		return self.get_message(SET_RESPONSE)
