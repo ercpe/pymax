@@ -4,6 +4,8 @@ import unittest
 import sys
 import datetime
 
+from pymax.objects import DeviceList
+
 if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_info.minor <= 2):
 	from mock import Mock
 else:
@@ -16,7 +18,8 @@ from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse,
 	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE, \
 	DiscoveryNetworkConfigurationResponse, DiscoveryIdentifyResponse
 from response import HelloResponseBytes, MResponseBytes, CubeConfigurationBytes, DiscoveryNetworkConfigResponseBytes, \
-	DiscoveryIdentifyResponseBytes, DiscoveryIdentifyRequestBytes, DiscoveryNetworkConfigRequestBytes
+	DiscoveryIdentifyResponseBytes, DiscoveryIdentifyRequestBytes, DiscoveryNetworkConfigRequestBytes, \
+	ThermostatConfigurationBytes
 
 
 class StaticResponseSocket(object):
@@ -287,3 +290,51 @@ class CubeTest(unittest.TestCase):
 		response = c.set_valve_config(1, '122b56', 10, 0.5, 0, 1, 10)
 		c.send_message.assert_called_with(SetValveConfigMessage('122b56', 1, 10, 0.5, 0, 1, 10))
 		self.assertIsInstance(response, SetResponse)
+
+	def test_handle_message(self):
+		c = Cube(None, None)
+
+		msg = HelloResponse(HelloResponseBytes)
+		c.handle_message(msg)
+		self.assertEqual(c.info, msg)
+
+		msg = FResponse(b"ntp.homematic.com,ntp.homematic.com")
+		c.handle_message(msg)
+		self.assertEqual(c._ntp_servers, ['ntp.homematic.com', 'ntp.homematic.com'])
+
+		msg = MResponse(MResponseBytes)
+		c.handle_message(msg)
+		self.assertEqual(c.devices, [
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1),
+		])
+
+		c = Cube(None, None)
+		c._devices = DeviceList([
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=2),
+		])
+		msg = MResponse(MResponseBytes)
+		c.handle_message(msg)
+		self.assertEqual(c.devices, [
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1),
+		])
+
+		msg = ConfigurationResponse(ThermostatConfigurationBytes)
+		c.handle_message(msg)
+		self.assertEqual(c.devices, [
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, configuration=msg),
+		])
+
+		c = Cube(None, None)
+		c._devices = DeviceList([
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1),
+		])
+		lresp = LResponse("BhIrZfcSGWQ8AOsA")
+		c.handle_message(lresp)
+		self.assertEqual(c.devices, [
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, settings=lresp),
+		])
+		msg = ConfigurationResponse(ThermostatConfigurationBytes)
+		c.handle_message(msg)
+		self.assertEqual(c.devices, [
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, configuration=msg, settings=lresp),
+		])
