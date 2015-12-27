@@ -33,7 +33,7 @@ class Discovery(Debugger):
 
 		self.dump_bytes(payload, "Discovery packet")
 
-		send_socket.sendto(payload, ("10.10.10.255", 23272))
+		send_socket.sendto(payload, ("255.255.255.255", 23272))
 
 		recv_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		recv_socket.settimeout(10)
