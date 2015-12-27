@@ -70,16 +70,17 @@ class DeviceList(list):
 
 	def __contains__(self, item):
 		if isinstance(item, str):
-			return len(filter(lambda d: d.name == item, self)) > 0
-		elif isinstance(item, RFAddr):
-			return len(filter(lambda d: d.rf_address == item, self)) > 0
+			return len(list(filter(lambda d: d.name == item, self))) > 0
+		elif isinstance(item, RFAddr) or isinstance(item, bytearray):
+			return len(list(filter(lambda d: d.rf_address == item, self))) > 0
 		return False
 
-DeviceType = collections.namedtuple('Device', ('rf_address', 'serial', 'name'))
+
+DeviceType = collections.namedtuple('Device', ('rf_address', 'serial', 'name', 'room_id'))
 
 class Device(DeviceType):
 
 	def __new__(cls, **kwargs):
 		for f in DeviceType._fields:
 			kwargs.setdefault(f, None)
-		super(Device, cls).__new__(cls, **kwargs)
+		return super(Device, cls).__new__(cls, **kwargs)

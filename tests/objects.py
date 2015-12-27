@@ -2,7 +2,7 @@
 import unittest
 import datetime
 
-from pymax.objects import ProgramSchedule, DeviceList, RFAddr
+from pymax.objects import ProgramSchedule, DeviceList, RFAddr, Device
 
 
 class ProgramScheduleTest(unittest.TestCase):
@@ -37,6 +37,22 @@ class DeviceListTest(unittest.TestCase):
 	def test_for_room(self):
 		dl = DeviceList()
 		self.assertEqual(list(dl.for_room(0)), [])
+
+		dev = Device(rf_address=RFAddr('122b65'), serial='123', name='foobar', room_id=1)
+		dl.append(dev)
+		self.assertEqual(list(dl.for_room(0)), [])
+		self.assertEqual(list(dl.for_room(1)), [dev])
+
+
+	def test_contains(self):
+		dl = DeviceList()
+		dl.append(Device(rf_address=RFAddr('122b65'), serial='123', name='foobar'))
+
+		self.assertTrue('foobar' in dl)
+		self.assertTrue(RFAddr('122b65') in dl)
+		self.assertTrue(bytearray([0x12, 0x2b, 0x65]) in dl)
+		self.assertFalse(True in dl)
+		self.assertFalse(1 in dl)
 
 
 class RFAddrTest(unittest.TestCase):
