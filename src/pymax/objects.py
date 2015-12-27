@@ -66,7 +66,7 @@ class DeviceList(list):
 		super(DeviceList, self).__init__(iterable or [])
 
 	def for_room(self, room_id):
-		return filter(lambda d: d.room_id == room_id, self)
+		return filter(lambda d: getattr(d, 'room_id', None) == room_id, self)
 
 	def __contains__(self, item):
 		if isinstance(item, str):

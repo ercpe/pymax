@@ -189,13 +189,14 @@ class Cube(object):
 		self.connection.disconnect()
 
 	def handle_message(self, msg):
+		logger.info("Handle message: %s" % msg)
 		if isinstance(msg, MResponse):
 			for idx, device_type, rf_address, serial, name, room_id in msg.devices:
 				self.devices.update(rf_address=rf_address, serial=serial, name=name, room_id=room_id)
 		elif isinstance(msg, ConfigurationResponse):
-			pass
-
-		logger.info("Handle message: %s" % msg)
+			self.devices.update(rf_address=msg.device_addr, configuration=msg)
+		elif isinstance(msg, LResponse):
+			self.devices.update(rf_address=msg.rf_addr, settings=msg)
 
 	@property
 	def info(self):
