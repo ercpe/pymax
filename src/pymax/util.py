@@ -8,7 +8,7 @@ import struct
 
 logger = logging.getLogger(__name__)
 
-class Debugger(object):
+class Debugger(object): # pragma: nocover
 	def dump_bytes(self, barray, message=None, level=logging.DEBUG):
 		if not logger.isEnabledFor(level):
 			return
