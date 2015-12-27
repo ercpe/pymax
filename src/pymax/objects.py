@@ -75,12 +75,44 @@ class DeviceList(list):
 			return len(list(filter(lambda d: d.rf_address == item, self))) > 0
 		return False
 
+	def get(self, **kwargs):
+		for item in self:
+			for k, v in kwargs.items():
+				if getattr(item, k) != v:
+					break
+			return item
 
-DeviceType = collections.namedtuple('Device', ('rf_address', 'serial', 'name', 'room_id'))
+	def update(self, **kwargs):
+		instance = None
+		for attr in ('rf_address', 'serial', 'name'):
+			value = kwargs.get(attr, None)
+			if value:
+				instance = self.get(**kwargs)
+				if instance:
+					break
 
-class Device(DeviceType):
+		if instance:
+			for k, v in kwargs.items():
+				instance[k] = v
+		else:
+			return self.append(Device(**kwargs))
 
-	def __new__(cls, **kwargs):
-		for f in DeviceType._fields:
-			kwargs.setdefault(f, None)
-		return super(Device, cls).__new__(cls, **kwargs)
+
+class Device(dict):
+
+	def __getattr__(self, item):
+		if item in self:
+			return self[item]
+		return super(Device, self).__getattr__(item)
+
+	def __eq__(self, other):
+		if isinstance(other, dict) or isinstance(other, Device):
+			return len(self) == len(other) and all((k in other for k in self.keys())) and \
+				all((self[k] == other[k] for k in self.keys()))
+		return False
+
+	def __repr__(self):
+		return self.__str__()
+
+	def __str__(self):
+		return "%s(%s)" % (self.__class__.__name__, ', '.join(["%s=%s" % (k, self[k]) for k in sorted(self.keys())]))
