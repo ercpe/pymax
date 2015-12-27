@@ -22,32 +22,45 @@ class Discovery(Debugger):
 	DISCOVERY_TYPE_NETWORK_CONFIG = 'N'
 
 	def discover(self, cube_serial=None, discovery_type=DISCOVERY_TYPE_IDENTIFY):
-		send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-		send_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
-		send_socket.settimeout(10)
+		send_socket = None
+		recv_socket = None
 
-		payload = bytearray("eQ3Max", "utf-8") + \
-					bytearray("*\0", "utf-8") + \
-					bytearray(cube_serial or '*' * 10, 'utf-8') + \
-					bytearray(discovery_type, 'utf-8')
+		try:
+			send_socket = self._create_send_socket()
+			recv_socket = self._create_receive_socket()
 
-		self.dump_bytes(payload, "Discovery packet")
+			payload = bytearray("eQ3Max", "utf-8") + \
+						bytearray("*\0", "utf-8") + \
+						bytearray(cube_serial or '*' * 10, 'utf-8') + \
+						bytearray(discovery_type, 'utf-8')
 
-		send_socket.sendto(payload, ("255.255.255.255", 23272))
+			self.dump_bytes(payload, "Discovery packet")
 
+			send_socket.sendto(payload, ("255.255.255.255", 23272))
+
+			response = bytearray(recv_socket.recv(50))
+
+			if discovery_type == Discovery.DISCOVERY_TYPE_IDENTIFY:
+				return DiscoveryIdentifyResponse(response)
+			elif discovery_type == Discovery.DISCOVERY_TYPE_NETWORK_CONFIG:
+				return DiscoveryNetworkConfigurationResponse(response)
+		finally:
+			if send_socket:
+				send_socket.close()
+			if recv_socket:
+				recv_socket.close()
+
+	def _create_receive_socket(self):
 		recv_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		recv_socket.settimeout(10)
 		recv_socket.bind(("0.0.0.0", 23272))
+		return recv_socket
 
-		response = bytearray(recv_socket.recv(50))
-
-		if discovery_type == Discovery.DISCOVERY_TYPE_IDENTIFY:
-			return DiscoveryIdentifyResponse(response)
-		elif discovery_type == Discovery.DISCOVERY_TYPE_NETWORK_CONFIG:
-			return DiscoveryNetworkConfigurationResponse(response)
-
-		send_socket.close()
-		recv_socket.close()
+	def _create_send_socket(self):
+		send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+		send_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
+		send_socket.settimeout(10)
+		return send_socket
 
 
 class CubeConnectionException(Exception):

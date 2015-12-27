@@ -11,11 +11,12 @@ else:
 
 from pymax.messages import SetTemperatureAndModeMessage, FMessage, SetProgramMessage, SetTemperaturesMessage, \
 	SetValveConfigMessage
-from pymax.cube import Cube, Room, Device, CubeConnectionException
+from pymax.cube import Cube, Room, Device, CubeConnectionException, Discovery
 from pymax.response import HELLO_RESPONSE, HelloResponse, M_RESPONSE, MResponse, SetResponse, CONFIGURATION_RESPONSE, \
 	ConfigurationResponse, L_RESPONSE, LResponse, F_RESPONSE, FResponse, SET_RESPONSE, \
-	DiscoveryNetworkConfigurationResponse
-from response import HelloResponseBytes, MResponseBytes, CubeConfigurationBytes, DiscoveryNetworkConfigResponseBytes
+	DiscoveryNetworkConfigurationResponse, DiscoveryIdentifyResponse
+from response import HelloResponseBytes, MResponseBytes, CubeConfigurationBytes, DiscoveryNetworkConfigResponseBytes, \
+	DiscoveryIdentifyResponseBytes, DiscoveryIdentifyRequestBytes, DiscoveryNetworkConfigRequestBytes
 
 
 class StaticResponseSocket(object):
@@ -32,6 +33,50 @@ class StaticResponseSocket(object):
 		x = self.response[self.pos:self.pos + size]
 		self.pos += size
 		return x
+
+
+class DiscoveryTest(unittest.TestCase):
+
+	def _create_fake_send_socket(self):
+		s = Mock(socket.socket)
+		s.close = Mock()
+		return s
+
+	def _create_fake_receive_socket(self, recv_bytes):
+		s = Mock(socket.socket)
+		s.recv = Mock(return_value=recv_bytes)
+		s.close = Mock()
+		return s
+
+	def test_identify_discover(self):
+		send_socket = self._create_fake_send_socket()
+		recv_socket = self._create_fake_receive_socket(DiscoveryIdentifyResponseBytes)
+
+		d = Discovery()
+		d._create_send_socket = Mock(return_value=send_socket)
+		d._create_receive_socket = Mock(return_value=recv_socket)
+
+		response = d.discover()
+		send_socket.sendto.assert_called_with(DiscoveryIdentifyRequestBytes, ("255.255.255.255", 23272))
+		self.assertEqual(response, DiscoveryIdentifyResponse(DiscoveryIdentifyResponseBytes))
+
+		self.assertTrue(send_socket.close.called)
+		self.assertTrue(recv_socket.close.called)
+
+	def test_network_config_discover(self):
+		send_socket = self._create_fake_send_socket()
+		recv_socket = self._create_fake_receive_socket(DiscoveryNetworkConfigResponseBytes)
+
+		d = Discovery()
+		d._create_send_socket = Mock(return_value=send_socket)
+		d._create_receive_socket = Mock(return_value=recv_socket)
+
+		response = d.discover("KEQ0523864", Discovery.DISCOVERY_TYPE_NETWORK_CONFIG)
+		send_socket.sendto.assert_called_with(DiscoveryNetworkConfigRequestBytes, ("255.255.255.255", 23272))
+		self.assertEqual(response, DiscoveryNetworkConfigurationResponse(DiscoveryNetworkConfigResponseBytes))
+
+		self.assertTrue(send_socket.close.called)
+		self.assertTrue(recv_socket.close.called)
 
 
 class ConnectionTest(unittest.TestCase):

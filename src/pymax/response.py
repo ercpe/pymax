@@ -95,6 +95,14 @@ class DiscoveryIdentifyResponse(BaseResponse):
 	def __str__(self):
 		return "%s: RF addr: %s, FW version: %s" % (self.serial, self.rf_address, self.fw_version)
 
+	def __eq__(self, other):
+		return isinstance(other, DiscoveryIdentifyResponse) and \
+				self.name == other.name and \
+				self.serial == other.serial and \
+				self.request_id == other.request_id and \
+				self.request_type == other.request_type and \
+				self.rf_address == other.rf_address and \
+				self.fw_version == other.fw_version
 
 class DiscoveryNetworkConfigurationResponse(BaseResponse):
 	length = 40
@@ -112,6 +120,18 @@ class DiscoveryNetworkConfigurationResponse(BaseResponse):
 
 	def __str__(self):
 		return "%s: IP: %s, Netmask: %s, Gateway: %s, DNS1: %s, DNS2: %s" % (self.serial, self.ip_address, self.netmask, self.gateway, self.dns1, self.dns2)
+
+	def __eq__(self, other):
+		return isinstance(other, DiscoveryNetworkConfigurationResponse) and \
+				self.name == other.name and \
+				self.serial == other.serial and \
+				self.request_id == other.request_id and \
+				self.request_type == other.request_type and \
+				self.ip_address == other.ip_address and \
+				self.gateway == other.gateway and \
+				self.netmask == other.netmask and \
+				self.dns1 == other.dns1 and \
+				self.dns2 == other.dns2
 
 
 class HelloResponse(BaseResponse):
