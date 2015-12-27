@@ -76,20 +76,15 @@ class DeviceList(list):
 		return False
 
 	def get(self, **kwargs):
+		if not kwargs:
+			return None
+
 		for item in self:
-			for k, v in kwargs.items():
-				if getattr(item, k) != v:
-					break
-			return item
+			if all((item.get(k, None) == v for k, v in kwargs.items())):
+				return item
 
 	def update(self, **kwargs):
-		instance = None
-		for attr in ('rf_address', 'serial', 'name'):
-			value = kwargs.get(attr, None)
-			if value:
-				instance = self.get(**kwargs)
-				if instance:
-					break
+		instance = self.get(**dict(((k, v) for k, v in kwargs.items() if k in ('rf_address', 'serial', 'name'))))
 
 		if instance:
 			for k, v in kwargs.items():
@@ -103,7 +98,8 @@ class Device(dict):
 	def __getattr__(self, item):
 		if item in self:
 			return self[item]
-		return super(Device, self).__getattr__(item)
+		raise AttributeError("%s has no attribute %s" % (self.__class__.__name__, item))
+		#return super(Device, self).__getattr__(item)
 
 	def __eq__(self, other):
 		if isinstance(other, dict) or isinstance(other, Device):

@@ -61,6 +61,7 @@ class DeviceListTest(unittest.TestCase):
 			Device(rf_address=RFAddr('122b65'), serial='123', name='foobar')
 		])
 
+	def test_update(self):
 		for k, v in (
 			('rf_address', '122b65'),
 			('name', 'foobar'),
@@ -73,6 +74,18 @@ class DeviceListTest(unittest.TestCase):
 			self.assertEqual(dl, [
 				Device(rf_address=RFAddr('122b65'), serial='123', name='foobar', room_id=1)
 			])
+
+	def test_get(self):
+		dev = Device(rf_address=RFAddr('122b65'), serial='123', name='foobar')
+		dl = DeviceList([dev])
+
+		self.assertIsNone(dl.get())
+
+		self.assertEqual(dl.get(rf_address='122b65'), dev)
+		self.assertEqual(dl.get(rf_address='122b65', serial='123'), dev)
+		self.assertEqual(dl.get(rf_address='122b65', serial='123', name='foobar'), dev)
+		self.assertIsNone(dl.get(rf_address='122b65', serial='123', name='foobar', blah='blubb'))
+		self.assertIsNone(dl.get(rf_address='foo'))
 
 
 class RFAddrTest(unittest.TestCase):
