@@ -27,8 +27,6 @@ class Discovery(Debugger):
 
 		try:
 			send_socket = self._create_send_socket()
-			recv_socket = self._create_receive_socket()
-
 			payload = bytearray("eQ3Max", "utf-8") + \
 						bytearray("*\0", "utf-8") + \
 						bytearray(cube_serial or '*' * 10, 'utf-8') + \
@@ -37,6 +35,7 @@ class Discovery(Debugger):
 			self.dump_bytes(payload, "Discovery packet")
 
 			send_socket.sendto(payload, ("255.255.255.255", 23272))
+			recv_socket = self._create_receive_socket()
 
 			response = bytearray(recv_socket.recv(50))
 
