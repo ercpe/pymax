@@ -14,7 +14,7 @@ class Debugger(object): # pragma: nocover
 			return
 
 		if isinstance(barray, bytearray):
-			logger.log(level, "%s (%s bytes)" % (message or 'Data', len(barray)))
+			logger.log(level, "%s (%s bytes)", (message or 'Data'), len(barray))
 			for row_num in range(0, len(barray), 10):
 				row_bytes = barray[row_num:row_num+10]
 				logger.log(level, "%s  %s" % (str(row_num).ljust(2), ' '.join(["%02x" % x for x in row_bytes])))

@@ -191,7 +191,7 @@ class MResponse(MultiResponse):
 			room_id, name_length = struct.unpack('bb', data[pos:pos+2])
 			room_name = data[pos + 2:pos + 2 + name_length].decode('utf-8')
 			group_rf_address = RFAddr(data[pos+name_length + 2 : pos+name_length + 2 + 3])
-			logger.debug("Room ID: %s, Room Name: %s, Group RF address: %s" % (room_id, room_name, group_rf_address))
+			logger.debug("Room ID: %s, Room Name: %s, Group RF address: %s", room_id, room_name, group_rf_address)
 			self.rooms.append((room_id, room_name, group_rf_address))
 			# set pos to start of next section
 			pos += 1 + 1 + name_length + 3
@@ -209,7 +209,7 @@ class MResponse(MultiResponse):
 			device_name = data[pos+15:pos+15+device_name_length].decode('utf-8')
 			room_id = data[pos+15+device_name_length]
 
-			logger.debug("Device: %s, Device RF address: %s, Device serial: %s, Device: %s, Room: %s" % (device_idx, device_rf_address, device_serial, device_name, room_id))
+			logger.debug("Device: %s, Device RF address: %s, Device serial: %s, Device: %s, Room: %s", device_idx, device_rf_address, device_serial, device_name, room_id)
 			self.devices.append((device_idx, device_type, device_rf_address, device_serial, device_name, room_id))
 
 			pos += 1 + 3 + 10 + device_name_length + 2
@@ -228,22 +228,22 @@ class ConfigurationResponse(BaseResponse):
 		#self.dump_bytes(data, "device config")
 
 		data_length = data[0]
-		logger.debug("Data length for device config: %s" % data_length)
+		logger.debug("Data length for device config: %s", data_length)
 
 		self.device_addr = RFAddr(data[1:4])
 		self.device_type, self.room_id, self.firmware_version, self.test_result = struct.unpack('bbbb', data[4:8])
 		self.serial_number = data[8:17].decode('utf-8')
 
-		logger.debug("Device config for %s: type: %s, room: %s, firmware: %s, test: %s, serial number: %s" % (
+		logger.debug("Device config for %s: type: %s, room: %s, firmware: %s, test: %s, serial number: %s",
 			self.device_addr, self.device_type, self.room_id, self.firmware_version, self.test_result, self.serial_number
-		))
+		)
 
 		if self.device_type == DeviceCube:
 			self._parse_cube_config(data[18:])
 		elif self.device_type == DeviceRadiatorThermostat or self.device_type == DeviceRadiatorThermostatPlus:
 			self._parse_thermostat_config(data[18:])
 		else:
-			logger.warning("Cannot parse device configuration for type %s (%s)" % (self.device_type, device_type_name(self.device_type)))
+			logger.warning("Cannot parse device configuration for type %s (%s)", self.device_type, device_type_name(self.device_type))
 
 	def _parse_cube_config(self, config):
 		# Position   Length   Information
@@ -316,16 +316,16 @@ class ConfigurationResponse(BaseResponse):
 
 		ConfigurationResponse.max_valve_setting = property(lambda x: x.max_valve_raw * 100 / 255)
 
-		logger.debug("Comfort temperature:       %s°C (raw: %s)" % (self.comfort_temperature, self.comfort_temperature_raw))
-		logger.debug("Eco temperature:           %s°C (raw: %s)" % (self.eco_temperature, self.eco_temperature_raw))
-		logger.debug("Max set point temperature: %s°C (raw: %s)" % (self.max_set_point_temperature, self.max_set_point_temperature_raw))
-		logger.debug("Min set point temperature: %s°C (raw: %s)" % (self.min_set_point_temperature, self.min_set_point_temperature_raw))
-		logger.debug("Temperature offset:        %s°C (raw: %s)" % (self.temperature_offset, self.temperature_offset_raw))
-		logger.debug("Window open temperature:   %s°C (raw: %s)" % (self.window_open_temperature, self.window_open_temperature_raw))
-		logger.debug("Window open duration:      %s min (raw: %s)" % (self.window_open_duration, self.window_open_duration_raw))
-		logger.debug("Boost:                     %s minutes, %s %%" % (self.boost_duration, self.boost_valve_setting))
-		logger.debug("Decalcification:           day %s, hour %s" % (self.decalcification_day, self.decalcification_hour))
-		logger.debug("Max valve setting:         %s%% (raw: %s)" % (self.max_valve_setting, self.max_valve_raw))
+		logger.debug("Comfort temperature:       %s°C (raw: %s)", self.comfort_temperature, self.comfort_temperature_raw)
+		logger.debug("Eco temperature:           %s°C (raw: %s)", self.eco_temperature, self.eco_temperature_raw)
+		logger.debug("Max set point temperature: %s°C (raw: %s)", self.max_set_point_temperature, self.max_set_point_temperature_raw)
+		logger.debug("Min set point temperature: %s°C (raw: %s)", self.min_set_point_temperature, self.min_set_point_temperature_raw)
+		logger.debug("Temperature offset:        %s°C (raw: %s)", self.temperature_offset, self.temperature_offset_raw)
+		logger.debug("Window open temperature:   %s°C (raw: %s)", self.window_open_temperature, self.window_open_temperature_raw)
+		logger.debug("Window open duration:      %s min (raw: %s)", self.window_open_duration, self.window_open_duration_raw)
+		logger.debug("Boost:                     %s minutes, %s %%", self.boost_duration, self.boost_valve_setting)
+		logger.debug("Decalcification:           day %s, hour %s", self.decalcification_day, self.decalcification_hour)
+		logger.debug("Max valve setting:         %s%% (raw: %s)", self.max_valve_setting, self.max_valve_raw)
 		self.week_program = self._parse_week_program(config[11:])
 
 	def _parse_week_program(self, buffer):

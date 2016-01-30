@@ -107,7 +107,7 @@ class Cube(object):
 		if self._socket:
 			raise CubeConnectionException("Already connected")
 
-		logger.info("Connecting to cube %s:%s" % self.addr_port)
+		logger.info("Connecting to cube %s:%s", *self.addr_port)
 		self._socket = self._create_socket()
 		self.read()
 
@@ -130,16 +130,16 @@ class Cube(object):
 
 		while more:
 			try:
-				logger.debug("socket.recv(%s)" % buffer_size)
+				logger.debug("socket.recv(%s)", buffer_size)
 				tmp = self.socket.recv(buffer_size)
-				logger.debug("Read %s bytes" % len(tmp))
+				logger.debug("Read %s bytes", len(tmp))
 				more = len(tmp) > 0
 				buffer += tmp
 			except socket.timeout:
 				break
 
 		messages = buffer.splitlines()
-		logger.debug("Processing %s messages" % len(messages))
+		logger.debug("Processing %s messages", len(messages))
 
 		while len(messages):
 			current = messages[0]
@@ -153,10 +153,10 @@ class Cube(object):
 				while len(messages) > 1 and chr(messages[1][0]) == message_type:
 					multi_responses.append(messages.pop(1)[2:])
 
-				logger.debug("'%s' message with %s parts" % (message_type, len(multi_responses)))
+				logger.debug("'%s' message with %s parts", message_type, len(multi_responses))
 				response = self.parse_message(message_type, multi_responses)
 			else:
-				logger.debug("'%s' single-part message" % message_type)
+				logger.debug("'%s' single-part message", message_type)
 				response = self.parse_message(message_type, current[2:])
 
 			self.handle_message(response)
@@ -178,15 +178,15 @@ class Cube(object):
 
 		if clazz:
 			response = clazz(buffer)
-			logger.info("Received message %s: %s" % (type(response).__name__, response))
+			logger.info("Received message %s: %s", type(response).__name__, response)
 			self.received_messages[message_type] = response
 			return response
 		else:
-			logger.warning("Cannot process message type %s" % message_type)
+			logger.warning("Cannot process message type %s", message_type)
 			return None
 
 	def handle_message(self, msg):
-		logger.info("Handle message: %s" % msg)
+		logger.info("Handle message: %s", msg)
 		if isinstance(msg, HelloResponse):
 			self._cube_info = msg
 		elif isinstance(msg, FResponse):
@@ -201,7 +201,7 @@ class Cube(object):
 
 	def send_message(self, msg):
 		message_bytes = msg.to_bytes()
-		logger.info("Sending '%s' message (%s bytes)" % (msg.__class__.__name__, len(message_bytes)))
+		logger.info("Sending '%s' message (%s bytes)", msg.__class__.__name__, len(message_bytes))
 		self.socket.send(message_bytes)
 		self.read()
 
