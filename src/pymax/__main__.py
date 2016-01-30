@@ -47,4 +47,4 @@ if __name__ == "__main__": # pragma: no cover
 		for room in cube.rooms:
 			print("  %s (ID: %s, RF address: %s):" % (room.name, room.room_id, room.rf_address))
 			for device in room.devices:
-				print("  - %s (%s), serial: %s, RF address: %s" % (device.name, device_type_name(device.type), device.serial, device.rf_address))
+				print("  - %s, serial: %s, RF address: %s" % (device.name, device.serial, device.rf_address))
