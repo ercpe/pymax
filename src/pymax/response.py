@@ -182,12 +182,16 @@ class MResponse(MultiResponse):
 		base64_data = self.data.decode('utf-8')
 		data = bytearray(base64.b64decode(base64_data))
 
+		self.dump_bytes(data, "MResponse")
+
 		# first two bytes are currently unknown
 		self.num_rooms = data[2]
 		logger.debug("Number of rooms from MResponse: %s", self.num_rooms)
 		self.rooms = []
 		pos = 3
-		for _ in range(0, self.num_rooms):
+		for i in range(0, self.num_rooms):
+			logger.debug("Parsing room %s of %s (from pos %s)", i + 1, self.num_rooms, pos)
+
 			room_id, name_length = struct.unpack('bb', data[pos:pos+2])
 			room_name = data[pos + 2:pos + 2 + name_length].decode('utf-8')
 			group_rf_address = RFAddr(data[pos+name_length + 2 : pos+name_length + 2 + 3])
