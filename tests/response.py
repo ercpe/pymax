@@ -191,6 +191,13 @@ class MResponseTest(unittest.TestCase):
 			(0, 2, '122B65', 'MEQ1472997', 'Heizung', 1)
 		])
 
+		response = MResponse(bytearray('00,01,VgIBAQ9TbGFhcGthbWVyIExpc2EAAAABAxIXB01FUTA4NTM2MDMRd2FuZHRoZXJtb3N0YWF0IDEBAQ==', 'utf-8'))
+		self.assertEqual(response.num_rooms, 1)
+		self.assertEqual(response.num_devices, 1)
+		self.assertEqual(response.devices, [
+			(0, 3, '121707', 'MEQ0853603', 'wandthermostaat 1', 1)
+		])
+
 	def test_multi_parsing(self):
 		response = self._make_multi_response()
 
