@@ -305,23 +305,23 @@ class CubeTest(unittest.TestCase):
 		msg = MResponse(MResponseBytes)
 		c.handle_message(msg)
 		self.assertEqual(c.devices, [
-			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1),
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, device_type=2),
 		])
 
 		c = Cube(None, None)
 		c._devices = DeviceList([
-			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=2),
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=2, device_type=2),
 		])
 		msg = MResponse(MResponseBytes)
 		c.handle_message(msg)
 		self.assertEqual(c.devices, [
-			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1),
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, device_type=2),
 		])
 
 		msg = ConfigurationResponse(ThermostatConfigurationBytes)
 		c.handle_message(msg)
 		self.assertEqual(c.devices, [
-			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, configuration=msg),
+			Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, configuration=msg, device_type=2),
 		])
 
 		c = Cube(None, None)

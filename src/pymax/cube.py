@@ -193,7 +193,7 @@ class Cube(object):
 			self._ntp_servers = msg.ntp_servers
 		elif isinstance(msg, MResponse):
 			for idx, device_type, rf_address, serial, name, room_id in msg.devices:
-				self.devices.update(rf_address=rf_address, serial=serial, name=name, room_id=room_id)
+				self.devices.update(rf_address=rf_address, serial=serial, name=name, room_id=room_id, device_type=device_type)
 		elif isinstance(msg, ConfigurationResponse):
 			self.devices.update(rf_address=msg.device_addr, configuration=msg)
 		elif isinstance(msg, LResponse):
