@@ -5,7 +5,8 @@ import datetime
 from pymax.objects import ProgramSchedule
 from pymax.response import DiscoveryIdentifyResponse, BaseResponse, DiscoveryNetworkConfigurationResponse, \
 	HelloResponse, \
-	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus, LResponse, FResponse, SetResponse
+	MResponse, ConfigurationResponse, DeviceCube, DeviceRadiatorThermostatPlus, LResponse, FResponse, SetResponse, \
+	DeviceWallThermostat
 
 DiscoveryIdentifyRequestBytes = bytearray([
 	0x65, 0x51, 0x33, 0x4D, 0x61, 0x78, 0x2A, 0x00, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x49
@@ -68,6 +69,11 @@ ThermostatConfigurationBytes = bytearray(b'122b65,0hIrZQIBEABNRVExNDcyOTk3Oyc9CQ
 										 b'RSBFIERIeQlFIEUgRSBFIEUgRSBFIEUgRSBFIEUgREJ4XkTJeRJFIEUgRSBFIEUgRSBFIEUgRSB'
 										 b'EQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIERCeF5EyXkSRSBFIEUgRSBFIEUgRSBFIEUgREJ4Xk'
 										 b'TJeRJFIEUgRSBFIEUgRSBFIEUgRSBEQnheRMl5EkUgRSBFIEUgRSBFIEUgRSBFIA==')
+
+WallThermostatConfigurationBytes = bytearray(b'121707,zhIXBwMBEP9NRVEwODUzNjAzKyE9CURIVQhFIEUgRSBFIEUgRSBFIEUgRSBFIEUgRE'
+											 b'hVCEUgRSBFIEUgRSBFIEUgRSBFIEUgRSBESFRsRMxVFEUgRSBFIEUgRSBFIEUgRSBFIERIVGxE'
+											 b'zFUURSBFIEUgRSBFIEUgRSBFIEUgREhUbETMVRRFIEUgRSBFIEUgRSBFIEUgRSBESFRsRMxVFE'
+											 b'UgRSBFIEUgRSBFIEUgRSBFIERIVGxEzFUURSBFIEUgRSBFIEUgRSBFIEUgBxgw')
 
 
 class BaseResponseTest(unittest.TestCase):
@@ -289,6 +295,16 @@ class ConfigurationResponseTest(unittest.TestCase):
 				ProgramSchedule(17.0, datetime.time(22, 50), 1440),
 			],
 		])
+
+	def test_wallthermostat_config(self):
+		response = ConfigurationResponse(WallThermostatConfigurationBytes)
+		self.assertEqual(response.device_type, DeviceWallThermostat)
+		self.assertEqual(response.device_addr, '121707')
+		self.assertEqual(response.serial_number, 'MEQ085360')
+		self.assertEqual(response.comfort_temperature, 21.5)
+		self.assertEqual(response.eco_temperature, 16.5)
+		self.assertEqual(response.max_set_point_temperature, 30.5)
+		self.assertEqual(response.min_set_point_temperature, 4.5)
 
 
 class LResponseTest(unittest.TestCase):

@@ -246,6 +246,8 @@ class ConfigurationResponse(BaseResponse):
 			self._parse_cube_config(data[18:])
 		elif self.device_type == DeviceRadiatorThermostat or self.device_type == DeviceRadiatorThermostatPlus:
 			self._parse_thermostat_config(data[18:])
+		elif self.device_type == DeviceWallThermostat:
+			self._parse_wall_thermostat_config(data[18:])
 		else:
 			logger.warning("Cannot parse device configuration for type %s (%s)", self.device_type, device_type_name(self.device_type))
 
@@ -358,6 +360,36 @@ class ConfigurationResponse(BaseResponse):
 			program.append(day_schedules)
 
 		return program
+
+	def _parse_wall_thermostat_config(self, buffer):
+		# Pos  Len  Information
+		# ================================================================
+		# 12   1    Comfort Temperature       in degrees celsius * 2
+		# 13   1    Eco Temperature           in degrees celsius * 2
+		# 14   1    Max Set Point Temperature in degrees celsius * 2
+		# 15   1    Min Set Point Temperature in degrees celsius * 2
+		# 1d   182  Weekly Program            Schedule of 26 bytes for
+		#                                     each day starting with
+		#                                     Saturday. Each schedule
+		#                                     consists of 13 words
+		#                                     (2 bytes) e.g. set points.
+		#                                     1 set point consist of
+		#                                     7 MSB bits is temperature
+		#                                       set point (in degrees * 2)
+		#                                     9 LSB bits is until time
+		#                                       (in minutes * 5)
+		# cc   3    Unknown
+		self.comfort_temperature_raw, \
+		self.eco_temperature_raw,\
+		self.max_set_point_temperature_raw,\
+		self.min_set_point_temperature_raw = struct.unpack('BBBB', buffer[:4])
+
+		ConfigurationResponse.comfort_temperature = property(lambda x: x.comfort_temperature_raw / 2.0)
+		ConfigurationResponse.eco_temperature = property(lambda x: x.eco_temperature_raw / 2.0)
+		ConfigurationResponse.max_set_point_temperature = property(lambda x: x.max_set_point_temperature_raw / 2.0)
+		ConfigurationResponse.min_set_point_temperature = property(lambda x: x.min_set_point_temperature_raw / 2.0)
+		self.week_program = self._parse_week_program(buffer[5:])
+
 
 	def __str__(self):
 		s = "%s config: serial %s, address: %s" % (device_type_name(self.device_type), self.serial_number, self.device_addr)
