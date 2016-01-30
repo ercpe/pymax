@@ -104,6 +104,7 @@ class DiscoveryIdentifyResponse(BaseResponse):
 				self.rf_address == other.rf_address and \
 				self.fw_version == other.fw_version
 
+
 class DiscoveryNetworkConfigurationResponse(BaseResponse):
 	length = 40
 
@@ -183,6 +184,7 @@ class MResponse(MultiResponse):
 
 		# first two bytes are currently unknown
 		self.num_rooms = data[2]
+		logger.debug("Number of rooms from MResponse: %s", self.num_rooms)
 		self.rooms = []
 		pos = 3
 		for _ in range(0, self.num_rooms):
