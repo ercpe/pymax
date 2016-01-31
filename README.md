@@ -2,6 +2,22 @@
 
 [![Build Status](https://travis-ci.org/ercpe/pymax.svg?branch=master)](https://travis-ci.org/ercpe/pymax) [![Coverage Status](https://coveralls.io/repos/ercpe/pymax/badge.svg?branch=master&service=github)](https://coveralls.io/github/ercpe/pymax?branch=master)
 
+# Basics
+
+## Requirements
+
+Supported Python versions: Python 2.7.9+, 3.3, 3.4, 3.5, 3.6 (nightly) and PyPy 2.5.0.
+
+## Installation
+
+If you are on Gentoo Linux, run 
+
+    emerge dev-python/pymax --ask
+    
+otherwise use pip
+
+    pip install pymax
+
 
 # Usage
 
@@ -70,6 +86,7 @@ Resources:
 
 * [https://github.com/Bouni/max-cube-protocol](https://github.com/Bouni/max-cube-protocol)
 * [http://www.domoticaforum.eu/viewtopic.php?f=66&t=6654](http://www.domoticaforum.eu/viewtopic.php?f=66&t=6654)
+
 
 ## License
 
