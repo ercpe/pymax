@@ -191,7 +191,8 @@ class MResponse(MultiResponse):
 		pos = 3
 		for i in range(0, self.num_rooms):
 			logger.debug("Parsing room %s of %s (from pos %s)", i + 1, self.num_rooms, pos)
-			room_id, name_length = tuple(data[pos:pos+2])
+
+			room_id, name_length = struct.unpack('bb', data[pos:pos+2])
 			room_name = data[pos + 2:pos + 2 + name_length].decode('utf-8')
 			group_rf_address = RFAddr(data[pos+name_length + 2 : pos+name_length + 2 + 3])
 			logger.debug("Room ID: %s, Room Name: %s, Group RF address: %s", room_id, room_name, group_rf_address)
