@@ -3,7 +3,7 @@ import base64
 
 import struct
 
-from pymax.objects import ProgramSchedule
+from pymax.objects import ProgramSchedule, RFAddr
 from pymax.util import date_to_dateuntil, py_day_to_cube_day, pack_temp_and_time, Debugger, unpack_temp_and_time
 
 QUIT_MESSAGE = 'q'
@@ -68,11 +68,12 @@ class SetMessage(BaseMessage):
         self.room_number = room_number
 
     def get_payload(self):
-        return bytearray(struct.pack('!Q', self.type)[-6:]) + bytearray([
-            int(self.rf_addr[0:2], 16),
-            int(self.rf_addr[2:4], 16),
-            int(self.rf_addr[4:6], 16)
-        ]) + bytearray([self.room_number])
+       
+        a = bytearray(struct.pack('!Q', self.type)[-6:])
+        b = self.rf_addr._bytes if isinstance(self.rf_addr, RFAddr) else self.rf_addr
+        c = bytearray([self.room_number])
+        
+        return a + b + c
 
     def __eq__(self, other):
         return isinstance(other, SetMessage) and self.rf_addr == other.rf_addr and self.type == other.type and \

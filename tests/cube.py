@@ -4,7 +4,7 @@ import unittest
 import sys
 import datetime
 
-from pymax.objects import DeviceList
+from pymax.objects import DeviceList, RFAddr
 
 if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_info.minor <= 2):
     from mock import Mock
@@ -278,6 +278,33 @@ class CubeTest(unittest.TestCase):
         response = c.set_program(1, '122b56', 1, [])
         c.send_message.assert_called_with(SetProgramMessage('122b56', 1, 1, []))
         self.assertIsInstance(response, SetResponse)
+
+    def test_set_program_with_rfaddr(self):
+        c = self._mocked_cube()
+        rfaddr = RFAddr('122b56')
+        response = c.set_program(1, rfaddr, 1, [])
+        setmessage = SetProgramMessage(rfaddr, 1, 1, [])
+        c.send_message.assert_called_with(setmessage)
+        
+        self.assertIsInstance(response, SetResponse)
+
+    def test_set_program_same_payload(self):
+        c = self._mocked_cube()
+        rfaddr = RFAddr('122b56')
+        
+        response1 = c.set_program(1, rfaddr, 1, [])
+        setmessage1 = SetProgramMessage(rfaddr, 1, 1, [])
+        payload1 = setmessage1.get_payload()
+        c.send_message.assert_called_with(setmessage1)
+        self.assertIsInstance(response1, SetResponse)
+
+        response2 = c.set_program(1, '122b56', 1, [])
+        setmessage2 = SetProgramMessage('122b56', 1, 1, [])
+        payload2 = setmessage1.get_payload()
+        c.send_message.assert_called_with(setmessage2)
+        self.assertIsInstance(response2, SetResponse)
+        
+        self.assertEqual(payload1, payload2)
 
     def test_set_temperatures(self):
         c = self._mocked_cube()

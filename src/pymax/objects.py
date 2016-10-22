@@ -56,8 +56,11 @@ class RFAddr(object):
     def __repr__(self):
         return self.__str__()
 
+    def __getitem__(self, item):
+        return self._bytes[item.start:item.stop:item.step]
+
     def __str__(self):
-        return "{0:02x}{1:02x}{2:02x}".format(*self._bytes)
+        return "{0}({1:02x}{2:02x}{3:02x})".format(self.__class__.__name__, *self._bytes)
 
 
 class DeviceList(list):
