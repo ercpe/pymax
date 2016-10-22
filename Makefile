@@ -26,4 +26,10 @@ coverage:
 	PYTHONPATH=".:./src" coverage run --source='src' --omit='src/test.py,src/fakecube.py' --branch tests/__main__.py
 	coverage report -m
 
-travis: compile compile_optimized test_default_python coverage
+clean:
+	find -name "*.py?" -delete
+	rm -f coverage.xml
+	rm -f testresults.xml
+	rm -fr htmlcov dist amavisvt.egg-info
+
+travis: clean compile compile_optimized test_default_python coverage

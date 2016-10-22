@@ -2,6 +2,9 @@
 import collections
 import datetime
 
+import binascii
+
+
 class ProgramSchedule(object):
 
     def __init__(self, temperature, begin, end):
@@ -43,11 +46,11 @@ class RFAddr(object):
         else:
             if len(byte_tuple_string) != 6:
                 raise ValueError("Need a string of length 6 passing a string")
-            self._bytes = bytearray([int(byte_tuple_string[s:s + 2], 16) for s in range(0, 6, 2)])
+            self._bytes = bytearray(binascii.unhexlify(byte_tuple_string))
 
     def __eq__(self, other):
-        if isinstance(other, str):
-            return self.__str__().lower() == other.lower()
+        if isinstance(other, str) and len(other) == 6:
+            return self._bytes == bytearray([int(other[s:s + 2], 16) for s in range(0, 6, 2)])
         elif isinstance(other, RFAddr):
             return self._bytes == other._bytes
         elif isinstance(other, bytearray):
@@ -60,7 +63,7 @@ class RFAddr(object):
         return self._bytes[item.start:item.stop:item.step]
 
     def __str__(self):
-        return "{0}({1:02x}{2:02x}{3:02x})".format(self.__class__.__name__, *self._bytes)
+        return "{0:02x}{1:02x}{2:02x}".format(*self._bytes)
 
 
 class DeviceList(list):
