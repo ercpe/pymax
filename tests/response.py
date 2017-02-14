@@ -309,7 +309,7 @@ class ConfigurationResponseTest(unittest.TestCase):
 
 class LResponseTest(unittest.TestCase):
     def test_parsing(self):
-        response = LResponse("BhIrZfcSGWQ8AOsA")
+        response = LResponse("BhIrZfcSGWQ8AOsA").responses[0]
 
         self.assertEqual(response.rf_addr, '122b65')
         self.assertFalse(response.weekly_program)
@@ -329,7 +329,7 @@ class LResponseTest(unittest.TestCase):
         self.assertFalse(response.is_valid)
 
     def test_parsing_with_extra_fields(self):
-        response = LResponse("CxIrZfcSGWQ8AOsF")
+        response = LResponse("CxIrZfcSGWQ8AOsF").responses[0]
 
         self.assertEqual(response.rf_addr, '122b65')
         self.assertFalse(response.weekly_program)

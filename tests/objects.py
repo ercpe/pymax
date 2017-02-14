@@ -56,9 +56,9 @@ class DeviceListTest(unittest.TestCase):
     def test_update_add(self):
         dl = DeviceList()
 
-        dl.update(rf_address=RFAddr('122b65'), serial='123', name='foobar')
+        dl.update(rf_address=RFAddr('122b65'), serial='123', name='foobar', battery_low=False)
         self.assertEqual(dl, [
-            Device(rf_address=RFAddr('122b65'), serial='123', name='foobar')
+            Device(rf_address=RFAddr('122b65'), serial='123', name='foobar', battery_low=False)
         ])
 
     def test_update(self):
@@ -67,12 +67,12 @@ class DeviceListTest(unittest.TestCase):
             ('name', 'foobar'),
         ):
             dl = DeviceList([
-                Device(rf_address=RFAddr('122b65'), serial='123', name='foobar', room_id=0)
+                Device(rf_address=RFAddr('122b65'), serial='123', name='foobar', room_id=0, battery_low=False)
             ])
             dl.update(room_id=1, **{k:v})
 
             self.assertEqual(dl, [
-                Device(rf_address=RFAddr('122b65'), serial='123', name='foobar', room_id=1)
+                Device(rf_address=RFAddr('122b65'), serial='123', name='foobar', room_id=1, battery_low=False)
             ])
 
     def test_get(self):

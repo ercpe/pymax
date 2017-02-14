@@ -90,7 +90,7 @@ class DeviceList(list):
                 return item
 
     def update(self, **kwargs):
-        instance = self.get(**dict(((k, v) for k, v in kwargs.items() if k in ('rf_address', 'serial', 'name', 'battery_low'))))
+        instance = self.get(**dict(((k, v) for k, v in kwargs.items() if k in ('rf_address', 'serial', 'name'))))
 
         if instance:
             for k, v in kwargs.items():

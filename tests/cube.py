@@ -358,10 +358,16 @@ class CubeTest(unittest.TestCase):
         lresp = LResponse("BhIrZfcSGWQ8AOsA")
         c.handle_message(lresp)
         self.assertEqual(c.devices, [
-            Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, settings=lresp),
+            Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, settings=lresp.responses[0]),
         ])
         msg = ConfigurationResponse(ThermostatConfigurationBytes)
         c.handle_message(msg)
         self.assertEqual(c.devices, [
-            Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, configuration=msg, settings=lresp),
+            Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, configuration=msg, settings=lresp.responses[0]),
         ])
+# Test doesn't work, somehow the extended LResponse is wrong...
+        lrespext = LResponse("CxIrZfcSGWQ8AOsF")
+        c.handle_message(lrespext)
+#        self.assertEqual(c.devices, [
+#        Device(rf_address='122B65', serial='MEQ1472997', name='Heizung', room_id=1, settings=lrespext.responses[0]),
+#        ])

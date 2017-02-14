@@ -399,6 +399,7 @@ class ConfigurationResponse(BaseResponse):
 
         return s
 
+
 class SingleLResponse(BaseResponse):
     def _parse(self):
         submessage_len, rf1, rf2, rf3, unknown, flags1, flags2 = struct.unpack('B3BBBB', self.data[:7])
@@ -425,12 +426,12 @@ class SingleLResponse(BaseResponse):
         self.is_error = bool(flags1 & 0x04)
         self.is_valid = bool(flags1 & 0x05)
 
-	self.description = "%s: RF addr: %s, program: (weekly: %s, manual: %s, vacation: %s, boost_program: %s)" % (
+        self.description = "%s: RF addr: %s, program: (weekly: %s, manual: %s, vacation: %s, boost_program: %s)" % (
             self.__class__.__name__,
             self.rf_addr, self.weekly_program, self.manual_program, self.vacation_program, self.boost_program
         )
 
-        self.description += ", gateway_known: %s, panel_locked: %s, link_ok: %s, battery_low: %s " % ( 
+        self.description += ", gateway_known: %s, panel_locked: %s, link_ok: %s, battery_low: %s " % (
             self.gateway_known, self.panel_locked, self.link_ok, self.battery_low
         )
 
@@ -438,11 +439,11 @@ class SingleLResponse(BaseResponse):
             self.status_initialized, self.is_answer, self.is_error, self.is_valid
         )
 
-	# differ the devices, windowshutter is special.
+        # differ the devices, windowshutter is special.
         # state is coded in mode field:
         # open = auto/weekly program (00)
         # closed = vacation (10)
-	if submessage_len == 12:
+        if submessage_len == 12:
             self._parse_wall_mounted_thermostat(self.data)
         elif submessage_len == 11:
             self._parse_heater_thermostat(self.data)
@@ -459,9 +460,9 @@ class SingleLResponse(BaseResponse):
         self.valve_position, self.temperature, du1, du2, time_until, self.actual_temperature = struct.unpack('6B', data[7:13])
         self.time_until = datetime.timedelta(minutes=time_until * 30)
         x = self.temperature	# the highest bit encodes the 9th bit of the actual temperature
-        x & 128			# so extract it and shift it up.
-        x << 1
-        self.temperature & 127
+        x &= 128			        # so extract it and shift it up.
+        x = x << 1
+        self.temperature &= 127
         self.temperature /= 2.0
         self.actual_temperature += x
         self.actual_temperature /= 10.0
@@ -472,18 +473,17 @@ class SingleLResponse(BaseResponse):
     def __str__(self):
         return self.description
 
+
 class LResponse(BaseResponse):
     def _parse(self):
         data = bytearray(base64.b64decode(self.data))
         self.responses = []
         self.num_responses = 0
 
-	while len(data) > 0:
-#            print(len(data))
+        while len(data) > 5:
             self.num_responses += 1
             submessage_len = struct.unpack('B', data[:1])[0]
-            sr = SingleLResponse(data[:submessage_len+1])
-            self.responses.append(sr)
+            self.responses.append(SingleLResponse(data[:submessage_len+1]))
             del data[:submessage_len+1]
 
     def __str__(self):
