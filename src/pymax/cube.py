@@ -5,7 +5,7 @@ import logging
 
 import collections
 
-from pymax.messages import QuitMessage, FMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
+from pymax.messages import QuitMessage, FMessage, LMessage, SetTemperatureAndModeMessage, SetProgramMessage, \
     SetTemperaturesMessage, SetValveConfigMessage
 from pymax.objects import DeviceList, Device, RFAddr
 from pymax.response import DiscoveryIdentifyResponse, DiscoveryNetworkConfigurationResponse, HelloResponse, MResponse, \
@@ -197,7 +197,8 @@ class Cube(object):
         elif isinstance(msg, ConfigurationResponse):
             self.devices.update(rf_address=msg.device_addr, configuration=msg)
         elif isinstance(msg, LResponse):
-            self.devices.update(rf_address=msg.rf_addr, settings=msg)
+            for singleResponse in msg.responses:
+                self.devices.update(rf_address=singleResponse.rf_addr, settings=singleResponse)
 
     def send_message(self, msg):
         message_bytes = msg.to_bytes()
@@ -231,6 +232,9 @@ class Cube(object):
         if self._ntp_servers is None:
             self.send_message(FMessage())
         return self._ntp_servers
+
+    def get_device_list(self):
+        self.send_message(LMessage())
 
     def set_ntp_servers(self, ntp_servers):
         self.send_message(FMessage(ntp_servers))

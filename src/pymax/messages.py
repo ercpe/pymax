@@ -9,7 +9,7 @@ from pymax.util import date_to_dateuntil, py_day_to_cube_day, pack_temp_and_time
 QUIT_MESSAGE = 'q'
 F_MESSAGE = 'f'
 S_MESSAGE = 's'
-
+L_MESSAGE = 'l'
 
 class BaseMessage(object):
 
@@ -52,6 +52,16 @@ class FMessage(BaseMessage):
 
     def __eq__(self, other):
         return isinstance(other, FMessage) and self.ntp_servers == other.ntp_servers
+
+class LMessage(BaseMessage):
+    def __init__(self):
+        super(LMessage, self).__init__(L_MESSAGE)
+
+    def get_payload(self):
+        return 
+
+    def __eq__(self, other):
+        return isinstance(other, LMessage)
 
 
 class SetMessage(BaseMessage):

@@ -6,6 +6,8 @@ import datetime
 
 import struct
 
+import base64
+
 logger = logging.getLogger(__name__)
 
 class Debugger(object): # pragma: nocover
