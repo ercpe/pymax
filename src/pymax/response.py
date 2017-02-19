@@ -449,11 +449,13 @@ class SingleLResponse(BaseResponse):
             self._parse_heater_thermostat(self.data)
 
     def _parse_heater_thermostat(self, data):
-        self.valve_position, self.temperature, du1, du2, time_until = struct.unpack('5B', data[7:12])
+        self.valve_position, self.temperature, du1, self.actual_temperature, time_until = struct.unpack('5B', data[7:12])
         self.time_until = datetime.timedelta(minutes=time_until * 30)
         self.temperature /= 2.0
-        self.description += ", time_until: %s, valve_position: %s, temperature: %s" % (
-            self.time_until, self.valve_position, self.temperature
+        self.actual_temperature += (du1 & 1) << 8
+        self.actual_temperature /= 10.0
+        self.description += ", time_until: %s, valve_position: %s, temperature: %s, actual_temperature: %s" % (
+            self.time_until, self.valve_position, self.temperature, self.actual_temperature
         )
 
     def _parse_wall_mounted_thermostat(self, data):
