@@ -28,8 +28,8 @@ coverage:
 
 clean:
 	find -name "*.py?" -delete
-	rm -f coverage.xml
+	rm -f coverage.xml .coverage*
 	rm -f testresults.xml
-	rm -fr htmlcov dist amavisvt.egg-info
+	rm -fr htmlcov dist .cache
 
 travis: clean compile compile_optimized test_default_python coverage
